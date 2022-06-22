@@ -1,0 +1,19 @@
+name: flutter_video_view
+description: A view for video based on video_player and provides many basic functions.
+version: 0.0.1
+homepage: https://github.com/LiWenHui96
+repository: https://github.com/LiWenHui96/flutter_video_view
+issue_tracker: https://github.com/LiWenHui96/flutter_video_view/issues
+
+environment:
+  sdk: ">=2.16.0 <3.0.0"
+  flutter: ">=2.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_lints: ^1.0.4
+  flutter_test:
+    sdk: flutter

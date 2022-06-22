@@ -1,0 +1,27 @@
+name: flutter_video_view_example
+description: Demonstrates how to use the flutter_video_view plugin.
+
+publish_to: 'none'
+
+version: 0.0.1+1
+
+environment:
+  sdk: ">=2.16.0 <3.0.0"
+
+dependencies:
+  cupertino_icons: ^1.0.5
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_video_view:
+    path: ../
+
+dev_dependencies:
+  flutter_lints: ^1.0.4
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+
