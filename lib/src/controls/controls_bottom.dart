@@ -3,8 +3,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_video_view/src/inside.dart';
-import 'package:flutter_video_view/src/notifier/video_view_notifier.dart';
 import 'package:flutter_video_view/src/video_view_config.dart';
+import 'package:video_player/video_player.dart';
 
 import 'base_controls.dart';
 

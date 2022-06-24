@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_video_view/src/inside.dart';
 import 'package:flutter_video_view/src/local/video_view_localizations.dart';
 import 'package:flutter_video_view/src/notifier/controls_notifier.dart';
-import 'package:flutter_video_view/src/notifier/video_view_notifier.dart';
 import 'package:flutter_video_view/src/video_view_config.dart';
 import 'package:flutter_video_view/src/video_view_controller.dart';
+import 'package:provider/provider.dart';
+import 'package:video_player/video_player.dart';
 
 /// @Describe: Base for VideoViewControls.
 ///
@@ -35,7 +36,7 @@ abstract class BaseVideoViewControls<T extends StatefulWidget>
     final VideoViewController? oldController = _videoViewController;
     _videoViewController = VideoViewController.of(context);
     _videoPlayerController = videoViewController.videoPlayerController;
-    _videoViewConfig = videoViewController.viewConfig;
+    _videoViewConfig = videoViewController.videoViewConfig;
     _controlsNotifier = context.watch<ControlsNotifier>();
 
     if (oldController != _videoViewController) {

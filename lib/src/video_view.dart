@@ -1,12 +1,13 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:video_player/video_player.dart';
 
 import 'controls/video_view_controls.dart';
 import 'inside.dart';
 import 'local/video_view_localizations.dart';
 import 'notifier/controls_notifier.dart';
-import 'notifier/video_view_notifier.dart';
 import 'video_view_config.dart';
 import 'video_view_controller.dart';
 
@@ -225,7 +226,7 @@ class _VideoViewState extends BaseState<VideoView> {
 
   VideoPlayerValue get value => controller.videoPlayerController.value;
 
-  VideoViewConfig get config => controller.viewConfig;
+  VideoViewConfig get config => controller.videoViewConfig;
 
   VideoViewController get controller => widget.controller;
 }
