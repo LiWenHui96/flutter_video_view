@@ -6,16 +6,16 @@ import 'video_view_localizations.dart';
 /// @Describe: LocalizationsDelegate
 ///
 /// @Author: LiWeNHuI
-/// @Date: 2022/1/12
+/// @Date: 2022/6/22
 
 class VideoViewLocalizationsDelegate
     extends LocalizationsDelegate<VideoViewLocalizations> {
-  /// Externally provided
+  // ignore: public_member_api_docs
   const VideoViewLocalizationsDelegate();
 
   /// Provided to [MaterialApp] for use.
   static const VideoViewLocalizationsDelegate delegate =
-      VideoViewLocalizationsDelegate();
+  VideoViewLocalizationsDelegate();
 
   @override
   bool isSupported(Locale locale) =>
