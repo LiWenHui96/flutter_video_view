@@ -5,11 +5,11 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
 import 'controls/video_view_controls.dart';
-import 'inside.dart';
 import 'local/video_view_localizations.dart';
 import 'notifier/controls_notifier.dart';
 import 'video_view_config.dart';
 import 'video_view_controller.dart';
+import 'widgets/base_state.dart';
 
 /// @Describe: The view of video.
 ///
@@ -17,12 +17,12 @@ import 'video_view_controller.dart';
 /// @Date: 2022/6/15
 
 class VideoView extends StatefulWidget {
-  /// Externally provided
+  // ignore: public_member_api_docs
   const VideoView({Key? key, required this.controller}) : super(key: key);
 
   /// The controller of [VideoView].
   ///
-  /// Internal functions such as initializing the controller.
+  /// Initialize [VideoPlayerController] and other functions.
   final VideoViewController controller;
 
   @override
@@ -30,10 +30,13 @@ class VideoView extends StatefulWidget {
 }
 
 class _VideoViewState extends BaseState<VideoView> {
+  late ControlsNotifier _notifier;
+
   bool _isFullScreen = false;
 
   @override
   void initState() {
+    _notifier = ControlsNotifier();
     controller.addListener(listener);
 
     super.initState();
@@ -66,10 +69,8 @@ class _VideoViewState extends BaseState<VideoView> {
         _isFullScreen = isControllerFullScreen;
         await _pushToFullScreen();
       } else if (_isFullScreen) {
-        Navigator.of(
-          context,
-          rootNavigator: config.useRootNavigator,
-        ).pop();
+        Navigator.of(context, rootNavigator: config.useRootNavigator).pop();
+        _notifier.isLock = false;
         _isFullScreen = false;
       }
     }
@@ -108,12 +109,11 @@ class _VideoViewState extends BaseState<VideoView> {
     if (!mounted) {
       return;
     }
-    await Navigator.of(
-      context,
-      rootNavigator: config.useRootNavigator,
-    ).push(route);
+    await Navigator.of(context, rootNavigator: config.useRootNavigator)
+        .push(route);
 
     _isFullScreen = false;
+    _notifier.isLock = false;
     await controller.exitFullScreen();
   }
 
@@ -140,9 +140,7 @@ class _VideoViewState extends BaseState<VideoView> {
     final Widget child = MultiProvider(
       providers: <ChangeNotifierProvider<ChangeNotifier>>[
         ChangeNotifierProvider<VideoViewController>.value(value: controller),
-        ChangeNotifierProvider<ControlsNotifier>(
-          create: (_) => ControlsNotifier(),
-        ),
+        ChangeNotifierProvider<ControlsNotifier>.value(value: _notifier),
       ],
       child:
           Consumer<VideoViewController>(builder: (_, __, ___) => _buildBody()),
@@ -155,8 +153,6 @@ class _VideoViewState extends BaseState<VideoView> {
     return Stack(
       alignment: Alignment.center,
       children: <Widget>[
-        if (controller.isInitializing)
-          config.placeholder ?? const CircularProgressIndicator(),
         if (value.isInitialized)
           InteractiveViewer(
             maxScale: config.maxScale,
@@ -171,47 +167,13 @@ class _VideoViewState extends BaseState<VideoView> {
         if (config.overlay != null) config.overlay!,
         if (value.isBuffering)
           config.bufferingPlaceholder ?? const CircularProgressIndicator(),
-        if (!controller.isInitializing &&
-            !value.isInitialized &&
-            value.hasError)
-          Stack(
-            children: <Widget>[
-              if (Navigator.canPop(context))
-                IconButton(
-                  icon: const Icon(Icons.arrow_back_ios),
-                  color: config.foregroundColor,
-                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-                  onPressed: () async => Navigator.maybePop(context),
-                ),
-              Center(
-                child: config.initFailBuilder?.call(
-                      context,
-                      _initialize,
-                      local.loadFailed,
-                      local.retry,
-                    ) ??
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Text(local.loadFailed, style: defaultStyle),
-                        const SizedBox(height: 10),
-                        ElevatedButton(
-                          onPressed: _initialize,
-                          child: Text(local.retry, style: defaultStyle),
-                        ),
-                      ],
-                    ),
-              )
-            ],
-          )
-        else
-          SafeArea(
-            top: controller.isFullScreen,
-            bottom: false,
-            child: config.showControls
-                ? const VideoViewControls()
-                : const SizedBox.shrink(),
-          ),
+        SafeArea(
+          top: controller.isFullScreen,
+          bottom: false,
+          child: config.showControls
+              ? const VideoViewControls()
+              : const SizedBox.shrink(),
+        ),
       ],
     );
   }

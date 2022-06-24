@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import 'inside.dart';
+import 'package:flutter_video_view/src/video_view_controller.dart';
 
 /// @Describe: The config of VideoView.
 ///
@@ -9,7 +8,7 @@ import 'inside.dart';
 /// @Date: 2022/6/15
 
 class VideoViewConfig {
-  /// Externally provided
+  // ignore: public_member_api_docs
   VideoViewConfig({
     this.width = double.infinity,
     this.height,
@@ -22,16 +21,16 @@ class VideoViewConfig {
     this.panEnabled = false,
     this.scaleEnabled = false,
     this.aspectRatio,
+    this.allowedScreenSleep = true,
     this.autoInitialize = false,
     this.autoPlay = false,
+    this.firstTipConnectivity = true,
     this.startAt,
     this.looping = false,
-    this.placeholder,
-    this.bufferingPlaceholder,
-    this.initFailBuilder,
     this.overlay,
+    this.initPlaceholderBuilder,
+    this.bufferingPlaceholder,
     this.fullScreenByDefault = false,
-    this.allowedScreenSleep = true,
     this.useRootNavigator = true,
     this.routePageBuilder,
     this.systemOverlaysEnterFullScreen,
@@ -40,14 +39,15 @@ class VideoViewConfig {
     this.deviceOrientationsExitFullScreen = DeviceOrientation.values,
     this.showControlsOnInitialize = true,
     this.showControls = true,
+    this.hideControlsTimer = const Duration(seconds: 3),
     this.controlsBackgroundColor = const <Color>[
       Color.fromRGBO(0, 0, 0, .7),
       Color.fromRGBO(0, 0, 0, .3),
       Color.fromRGBO(0, 0, 0, 0),
     ],
-    this.hideControlsTimer = const Duration(seconds: 3),
-    this.volumeBuilder,
-    this.brightnessBuilder,
+    this.canLongPress = true,
+    this.canChangeVolumeOrBrightness = true,
+    this.canChangeProgress = true,
     this.title,
     this.titleTextStyle,
     this.canShowDevice = true,
@@ -121,6 +121,11 @@ class VideoViewConfig {
   /// The Aspect Ratio of the Video.
   final double? aspectRatio;
 
+  /// Defines if the player will sleep in fullscreen or not.
+  ///
+  /// Defaults to true.
+  final bool allowedScreenSleep;
+
   /// Initialize the Video on Startup. This will prep the video for playback.
   ///
   /// Defaults to false.
@@ -130,6 +135,10 @@ class VideoViewConfig {
   ///
   /// Defaults to false.
   final bool autoPlay;
+
+  /// Whether to prompt the network connection type when playing for the first
+  /// time.
+  final bool firstTipConnectivity;
 
   /// Where does the video start playing when it first plays.
   ///
@@ -141,36 +150,22 @@ class VideoViewConfig {
   /// Defaults to false.
   final bool looping;
 
-  /// The placeholder is displayed underneath the Video before it is initialized
-  /// or played.
-  final Widget? placeholder;
+  /// A widget which is placed between the video and the controls.
+  final Widget? overlay;
+
+  /// Widgets in various initialized states, but does not include the state
+  /// of successful initialization, because it is the state in which the video
+  /// is normally displayed.
+  final Map<VideoInitState, Widget>? initPlaceholderBuilder;
 
   /// The placeholder when buffered is displayed above the video.
   final Widget? bufferingPlaceholder;
-
-  /// Widgets that failed to initialize
-  ///
-  /// The `initialize` is an initialization method.
-  final Widget Function(
-    BuildContext context,
-    Future<void> Function() initialize,
-    String loadFailed,
-    String retry,
-  )? initFailBuilder;
-
-  /// A widget which is placed between the video and the controls.
-  final Widget? overlay;
 
   /// Whether to play full screen when auto play is enabled.
   /// Valid only if [autoPlay] is true.
   ///
   /// Defaults to false.
   final bool fullScreenByDefault;
-
-  /// Defines if the player will sleep in fullscreen or not.
-  ///
-  /// Defaults to true.
-  final bool allowedScreenSleep;
 
   /// Defines if push/pop navigations use the rootNavigator.
   ///
@@ -202,20 +197,28 @@ class VideoViewConfig {
   /// Defaults to true.
   final bool showControls;
 
-  /// The background color of the controller.
-  final List<Color> controlsBackgroundColor;
-
   /// Defines the [Duration] before the video controls are hidden.
   ///
   /// Defaults to three seconds.
   final Duration hideControlsTimer;
 
-  /// When the volume changes, you can use custom widget.
-  final Widget Function(BuildContext context, double volume)? volumeBuilder;
+  /// The background color of the controller.
+  final List<Color> controlsBackgroundColor;
 
-  /// When the brightness changes, you can use custom widget.
-  final Widget Function(BuildContext context, double brightness)?
-      brightnessBuilder;
+  /// Whether the video can be played at double speed by long pressing.
+  ///
+  /// Defaults to true.
+  final bool canLongPress;
+
+  /// Whether the volume or brightness can be adjusted.
+  ///
+  /// Defaults to true.
+  final bool canChangeVolumeOrBrightness;
+
+  /// Whether the video progress can be adjusted.
+  ///
+  /// Defaults to true.
+  final bool canChangeProgress;
 
   /// The title of video.
   final String? title;
@@ -272,6 +275,21 @@ typedef VideoViewRoutePageBuilder = Widget Function(
   Animation<double> secondaryAnimation,
   VideoViewControllerInherited controllerProvider,
 );
+
+/// Initialization status of video.
+enum VideoInitState {
+  /// Waiting for initialization.
+  none,
+
+  /// Initializing.
+  initializing,
+
+  /// Initialization successful.
+  success,
+
+  /// Initialization failed.
+  fail,
+}
 
 /// Position of text for video progress
 enum VideoTextPosition {

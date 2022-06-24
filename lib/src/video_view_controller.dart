@@ -6,13 +6,12 @@ import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock/wakelock.dart';
 
-import 'inside.dart';
 import 'video_view_config.dart';
 
 /// @Describe: The controller of VideoView.
 ///
 /// @Author: LiWeNHuI
-/// @Date: 2022/6/15
+/// @Date: 2022/6/22
 
 class VideoViewController extends _VideoViewNotifier {
   /// Constructs a [VideoViewController] playing a video from an asset.
@@ -112,6 +111,8 @@ class VideoViewController extends _VideoViewNotifier {
       .controller;
 }
 
+/// Basic controller and added VideoPlayerController.
+///
 /// initialize, play, setLooping, pause, seekTo, setVolume
 abstract class _VideoViewNotifier extends ChangeNotifier {
   _VideoViewNotifier(
@@ -127,15 +128,21 @@ abstract class _VideoViewNotifier extends ChangeNotifier {
   /// The config of VideoView.
   final VideoViewConfig videoViewConfig;
 
+  /// Whether to initialize for the first time. If the initialization process
+  /// fails for the first time, it will enter the infinite retry stage after
+  /// re initialization.
+  bool isFirstInit = true;
+
+  /// Whether wakelock has been opened before it is opened.
   bool _beforeEnableWakelock = false;
 
-  bool _isInitializing = false;
+  VideoInitState _videoInitState = VideoInitState.none;
 
-  /// Whether initializing.
-  bool get isInitializing => _isInitializing;
+  /// The current initialization state of the video.
+  VideoInitState get videoInitState => _videoInitState;
 
-  set isInitializing(bool value) {
-    _isInitializing = value;
+  set videoInitState(VideoInitState value) {
+    _videoInitState = value;
     notifyListeners();
   }
 
@@ -168,19 +175,16 @@ abstract class _VideoViewNotifier extends ChangeNotifier {
     }
   }
 
-  /// The aspectRatio of video.
   double _aspectRatio = 1;
 
-  /// get
+  /// The aspectRatio of video.
   double get aspectRatio => _aspectRatio;
 
-  /// Whether it is full screen mode.
   bool _isFullScreen = false;
 
-  /// get
+  /// Whether it is full screen mode.
   bool get isFullScreen => _isFullScreen;
 
-  /// set
   set isFullScreen(bool value) {
     _isFullScreen = value;
     notifyListeners();
@@ -206,19 +210,40 @@ abstract class _VideoViewNotifier extends ChangeNotifier {
     }
   }
 
+  bool get isPlaying => videoPlayerController.value.isPlaying;
+
+  bool get isInitialized => videoPlayerController.value.isInitialized;
+
+  bool get isLooping => videoPlayerController.value.isLooping;
+
+  bool get isBuffering => videoPlayerController.value.isBuffering;
+
+  bool get hasError => videoPlayerController.value.hasError;
+
   /// Initialize the controller.
   Future<void> initialize() async {
-    isInitializing = false;
-
+    /// This is the process of video initialization to obtain the relevant
+    /// status.
     try {
-      isInitializing = true;
+      videoInitState = VideoInitState.initializing;
       await videoPlayerController.initialize();
+      videoInitState = videoPlayerController.value.isInitialized
+          ? VideoInitState.success
+          : VideoInitState.fail;
     } catch (e) {
-      debugPrint('VideoView: $e');
-    } finally {
-      isInitializing = false;
+      videoInitState = VideoInitState.fail;
     }
 
+    if (videoInitState == VideoInitState.fail) {
+      if (isFirstInit) {
+        isFirstInit = false;
+      } else {
+        await initialize();
+      }
+    }
+
+    /// After initialization, obtain the aspect ratio and the direction of
+    /// video in full screen mode.
     final VideoPlayerValue value = videoPlayerController.value;
     if (value.isInitialized) {
       _aspectRatio = videoViewConfig.aspectRatio ?? value.aspectRatio;
@@ -257,11 +282,17 @@ abstract class _VideoViewNotifier extends ChangeNotifier {
 
   /// Starts playing the video.
   Future<void> play() async {
+    if (!videoPlayerController.value.isInitialized) {
+      return;
+    }
     await videoPlayerController.play();
   }
 
   /// Pauses the video.
   Future<void> pause() async {
+    if (!videoPlayerController.value.isInitialized) {
+      return;
+    }
     await videoPlayerController.pause();
   }
 
@@ -327,6 +358,23 @@ abstract class _VideoViewNotifier extends ChangeNotifier {
 
     super.dispose();
   }
+}
+
+// ignore: public_member_api_docs
+class VideoViewControllerInherited extends InheritedWidget {
+  // ignore: public_member_api_docs
+  const VideoViewControllerInherited({
+    Key? key,
+    required this.controller,
+    required Widget child,
+  }) : super(key: key, child: child);
+
+  // ignore: public_member_api_docs
+  final VideoViewController controller;
+
+  @override
+  bool updateShouldNotify(covariant VideoViewControllerInherited oldWidget) =>
+      controller != oldWidget.controller;
 }
 
 enum _VideoOrientation { custom, landscape, portrait, other }
