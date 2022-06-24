@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_video_view/src/video_view_controller.dart';
+
+import 'video_view.dart';
 
 /// @Describe: The config of VideoView.
 ///
@@ -267,14 +268,6 @@ class VideoViewConfig {
   /// See [VideoViewProgressColors] for default values.
   final VideoViewProgressColors? videoViewProgressColors;
 }
-
-// ignore: public_member_api_docs
-typedef VideoViewRoutePageBuilder = Widget Function(
-  BuildContext context,
-  Animation<double> animation,
-  Animation<double> secondaryAnimation,
-  VideoViewControllerInherited controllerProvider,
-);
 
 /// Initialization status of video.
 enum VideoInitState {
