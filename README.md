@@ -32,7 +32,7 @@ flutter pub get
 3. Introduce
 
 ```dart
-import 'package:flutter_video_view/video_view.dart';
+import 'package:flutter_video_view/flutter_video_view.dart';
 ```
 
 ### Localized configuration
@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
 ## Usage
 
 ```dart
-import 'package:flutter_video_view/video_view.dart';
+import 'package:flutter_video_view/flutter_video_view.dart';
 
 final view = VideoView(
   controller: VideoViewController.network(

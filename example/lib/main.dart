@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_video_view/video_view.dart';
+import 'package:flutter_video_view/flutter_video_view.dart';
 
 import 'page_video.dart';
 
