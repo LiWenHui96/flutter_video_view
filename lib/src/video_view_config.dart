@@ -96,12 +96,12 @@ class VideoViewConfig {
   /// Defaults to white.
   final Color foregroundColor;
 
-  /// Size of all text.
+  /// Size of all texts.
   ///
   /// Defaults to 14.
   final double defaultTextSize;
 
-  /// Size of all text.
+  /// Size of all icons.
   ///
   /// Defaults to 16.
   final double defaultIconSize;
