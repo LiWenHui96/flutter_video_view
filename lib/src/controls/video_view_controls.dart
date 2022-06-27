@@ -14,7 +14,7 @@ import 'controls_top.dart';
 /// @Describe: The controls of video.
 ///
 /// @Author: LiWeNHuI
-/// @Date: 2022/6/16
+/// @Date: 2022/6/23
 
 class VideoViewControls extends StatefulWidget {
   // ignore: public_member_api_docs

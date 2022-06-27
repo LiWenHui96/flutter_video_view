@@ -19,7 +19,7 @@ import 'widgets/base_state.dart';
 /// @Describe: The view of video.
 ///
 /// @Author: LiWeNHuI
-/// @Date: 2022/6/15
+/// @Date: 2022/6/22
 
 class VideoView extends StatefulWidget {
   // ignore: public_member_api_docs
@@ -93,22 +93,13 @@ class _VideoViewState extends BaseState<VideoView> {
       ) {
         final VideoViewControllerInherited child = _buildWidget();
 
-        if (config.routePageBuilder == null) {
-          return AnimatedBuilder(
-            animation: animation,
-            builder: (_, __) => Scaffold(
-              resizeToAvoidBottomInset: false,
-              backgroundColor: config.backgroundColor,
-              body: child,
-            ),
-          );
-        }
-
-        return config.routePageBuilder!(
-          context,
-          animation,
-          secondaryAnimation,
-          child,
+        return AnimatedBuilder(
+          animation: animation,
+          builder: (_, __) => Scaffold(
+            resizeToAvoidBottomInset: false,
+            backgroundColor: config.backgroundColor,
+            body: child,
+          ),
         );
       },
     );
@@ -161,7 +152,7 @@ class _VideoViewState extends BaseState<VideoView> {
     return Stack(
       alignment: Alignment.center,
       children: <Widget>[
-        if (value.isInitialized)
+        if (controller.videoInitState == VideoInitState.success)
           InteractiveViewer(
             maxScale: config.maxScale,
             minScale: config.minScale,
