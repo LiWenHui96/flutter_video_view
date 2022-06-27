@@ -1,5 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="io.video.view.example">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+
    <application
         android:label="Video View Example"
         android:name="${applicationName}"

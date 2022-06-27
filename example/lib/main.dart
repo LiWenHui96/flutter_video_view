@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-
 import 'package:flutter/services.dart';
-import 'package:flutter_video_view/flutter_video_view.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_video_view/video_view.dart';
 
-void main() {
+import 'page_video.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await redoSystemStyle();
+
   runApp(const MyApp());
 }
 
+/// Program entry
 class MyApp extends StatefulWidget {
+  // ignore: public_member_api_docs
   const MyApp({Key? key}) : super(key: key);
 
   @override
@@ -16,47 +23,87 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
-
-  @override
-  void initState() {
-    super.initState();
-    initPlatformState();
-  }
-
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    String platformVersion;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    // We also handle the message potentially returning null.
-    try {
-      platformVersion =
-          await FlutterVideoView.platformVersion ?? 'Unknown platform version';
-    } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
-    }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    setState(() {
-      _platformVersion = platformVersion;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
+      localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        VideoViewLocalizationsDelegate.delegate,
+      ],
+      supportedLocales: const <Locale>[Locale('en', 'US'), Locale('zh', 'CN')],
+      debugShowCheckedModeBanner: false,
+      home: const HomePage(),
+      routes: <String, WidgetBuilder>{'video': (_) => const VideoPage()},
+      title: 'Video View Example',
+    );
+  }
+}
+
+/// Home
+class HomePage extends StatefulWidget {
+  // ignore: public_member_api_docs
+  const HomePage({Key? key}) : super(key: key);
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  String url =
+      'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4';
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget child = Center(
+      child: ElevatedButton(
+        onPressed: () async => Navigator.pushNamed(
+          context,
+          'video',
+          arguments: url,
         ),
-        body: Center(
-          child: Text('Running on: $_platformVersion\n'),
-        ),
+        child: const Text('视频'),
       ),
     );
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Video View Example')),
+      body: SizedBox(width: double.infinity, child: child),
+    );
+  }
+}
+
+/// 对于状态栏、导航栏整体处理
+Future<void> redoSystemStyle({bool isPortrait = true}) async {
+  await redoOrientation(isPortrait: isPortrait);
+
+  await SystemChrome.setEnabledSystemUIMode(
+    SystemUiMode.manual,
+    overlays: SystemUiOverlay.values,
+  );
+
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarContrastEnforced: true,
+    ),
+  );
+}
+
+/// 对于横竖屏的处理
+Future<void> redoOrientation({bool isPortrait = true}) async {
+  if (isPortrait) {
+    /// 竖屏
+    await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
+      DeviceOrientation.portraitUp,
+    ]);
+  } else {
+    /// 横屏
+    await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
   }
 }
