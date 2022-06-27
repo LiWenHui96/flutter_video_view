@@ -1,11 +1,11 @@
-import 'package:flutter_video_view/src/inside.dart';
+import 'package:flutter/material.dart';
 
 /// @Describe: The provider of a controls.
 ///
 /// @Author: LiWeNHuI
-/// @Date: 2022/6/15
+/// @Date: 2022/6/23
 
-class ControlsNotifier extends BaseNotifier {
+class ControlsNotifier extends ChangeNotifier {
   bool _isVisible = false;
 
   /// Show or hide for VideoViewControls.

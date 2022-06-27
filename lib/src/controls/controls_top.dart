@@ -1,9 +1,10 @@
 import 'dart:async';
 
-import 'package:battery_plus/battery_plus.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_video_view/src/inside.dart';
+import 'package:flutter_video_view/src/local/video_view_localizations.dart';
+import 'package:flutter_video_view/src/utils/util_battery.dart';
+import 'package:flutter_video_view/src/utils/util_connectivity.dart';
+import 'package:flutter_video_view/src/widgets/base_state.dart';
 
 import 'base_controls.dart';
 
@@ -13,7 +14,7 @@ import 'base_controls.dart';
 /// @Date: 2022/6/16
 
 class ControlsTop extends StatefulWidget {
-  /// Externally provided
+  // ignore: public_member_api_docs
   const ControlsTop({Key? key}) : super(key: key);
 
   @override
@@ -40,7 +41,10 @@ class _ControlsTopState extends BaseVideoViewControls<ControlsTop> {
                   child: Text(
                     videoViewConfig.title!,
                     style: videoViewConfig.titleTextStyle ??
-                        TextStyle(color: foregroundColor),
+                        TextStyle(
+                          color: foregroundColor,
+                          fontSize: videoViewConfig.defaultTextSize,
+                        ),
                     maxLines: 1,
                   ),
                 )
@@ -98,7 +102,6 @@ class _AnimatedText extends StatefulWidget {
   })  : assert(child is Text, 'Must be Text.'),
         super(key: key);
 
-  // ignore: public_member_api_docs
   final Widget child;
 
   /// Length of stride
@@ -180,10 +183,8 @@ class _DeviceInfoRowState extends BaseState<_DeviceInfoRow> {
   Timer? _timer;
   String _nowTime = '';
 
-  final Connectivity _connectivity = Connectivity();
-  String _connectivityResult = '检测中';
+  String _connectivityResult = '';
 
-  final Battery _battery = Battery();
   int _batteryLevel = 0;
   Color _batteryColor = Colors.white;
 
@@ -281,9 +282,8 @@ class _DeviceInfoRowState extends BaseState<_DeviceInfoRow> {
           height: height / 4,
           decoration: BoxDecoration(
             color: foregroundColor,
-            borderRadius: const BorderRadius.horizontal(
-              right: Radius.circular(1),
-            ),
+            borderRadius:
+                const BorderRadius.horizontal(right: Radius.circular(1)),
           ),
         ),
       ],
@@ -292,6 +292,7 @@ class _DeviceInfoRowState extends BaseState<_DeviceInfoRow> {
 
   Future<void> _init() async {
     await _setData();
+    _connectivityResult = local.detecting;
 
     _timer =
         Timer.periodic(const Duration(seconds: 1), (_) async => _setData());
@@ -304,41 +305,21 @@ class _DeviceInfoRowState extends BaseState<_DeviceInfoRow> {
           ' : '
           '${now.minute.toString().padLeft(2, '0')}';
 
-      _batteryLevel = await _battery.batteryLevel;
-      final BatteryState batteryState = await _battery.batteryState;
-      switch (batteryState) {
-        case BatteryState.full:
-        case BatteryState.discharging:
-        case BatteryState.unknown:
-          _batteryColor = foregroundColor.withOpacity(.4);
-          break;
-        case BatteryState.charging:
-          _batteryColor = Colors.green.withOpacity(.8);
-          break;
-      }
+      await BatteryUtil.getBattery(
+        foregroundColor: foregroundColor,
+        onBatteryCallback: (int level, Color color) {
+          _batteryLevel = level;
+          _batteryColor = color;
+        },
+      );
 
-      final ConnectivityResult result = await _connectivity.checkConnectivity();
-      switch (result) {
-        case ConnectivityResult.bluetooth:
-          _connectivityResult = '蓝牙';
-          break;
-        case ConnectivityResult.wifi:
-          _connectivityResult = 'WIFI';
-          break;
-        case ConnectivityResult.ethernet:
-          _connectivityResult = '以太网';
-          break;
-        case ConnectivityResult.mobile:
-          _connectivityResult = '移动网络';
-          break;
-        case ConnectivityResult.none:
-          _connectivityResult = '无连接';
-          break;
-      }
+      _connectivityResult = await ConnectivityUtil.getDescription(local);
     }
 
     setState(() {});
   }
+
+  VideoViewLocalizations get local => VideoViewLocalizations.of(context);
 
   Color get foregroundColor => widget.foregroundColor;
 

@@ -6,7 +6,7 @@ import 'video_view.dart';
 /// @Describe: The config of VideoView.
 ///
 /// @Author: LiWeNHuI
-/// @Date: 2022/6/15
+/// @Date: 2022/6/22
 
 class VideoViewConfig {
   // ignore: public_member_api_docs
@@ -16,6 +16,8 @@ class VideoViewConfig {
     this.backgroundColor = Colors.black,
     this.tipBackgroundColor = Colors.black54,
     this.foregroundColor = Colors.white,
+    this.defaultTextSize = 14,
+    this.defaultIconSize = 16,
     this.canUseSafe = false,
     this.maxScale = 2.5,
     this.minScale = 0.8,
@@ -25,12 +27,12 @@ class VideoViewConfig {
     this.allowedScreenSleep = true,
     this.autoInitialize = false,
     this.autoPlay = false,
-    this.firstTipConnectivity = true,
     this.startAt,
     this.looping = false,
     this.overlay,
-    this.initPlaceholderBuilder,
+    this.placeholderBuilder,
     this.bufferingPlaceholder,
+    this.finishBuilder,
     this.fullScreenByDefault = false,
     this.useRootNavigator = true,
     this.routePageBuilder,
@@ -94,6 +96,16 @@ class VideoViewConfig {
   /// Defaults to white.
   final Color foregroundColor;
 
+  /// Size of all text.
+  ///
+  /// Defaults to 14.
+  final double defaultTextSize;
+
+  /// Size of all text.
+  ///
+  /// Defaults to 16.
+  final double defaultIconSize;
+
   /// When it is at the top, whether to maintain a safe distance from the top.
   ///
   /// Defaults to false.
@@ -137,10 +149,6 @@ class VideoViewConfig {
   /// Defaults to false.
   final bool autoPlay;
 
-  /// Whether to prompt the network connection type when playing for the first
-  /// time.
-  final bool firstTipConnectivity;
-
   /// Where does the video start playing when it first plays.
   ///
   /// Defaults to zero.
@@ -154,13 +162,14 @@ class VideoViewConfig {
   /// A widget which is placed between the video and the controls.
   final Widget? overlay;
 
-  /// Widgets in various initialized states, but does not include the state
-  /// of successful initialization, because it is the state in which the video
-  /// is normally displayed.
-  final Map<VideoInitState, Widget>? initPlaceholderBuilder;
+  /// Widgets in various initialized states.
+  final Map<VideoInitState, Widget>? placeholderBuilder;
 
   /// The placeholder when buffered is displayed above the video.
   final Widget? bufferingPlaceholder;
+
+  /// Widget to display when video playback is complete.
+  final Widget Function(BuildContext context, bool isFullScreen)? finishBuilder;
 
   /// Whether to play full screen when auto play is enabled.
   /// Valid only if [autoPlay] is true.
@@ -307,35 +316,31 @@ enum VideoTextPosition {
 class VideoViewProgressColors {
   /// Any property can be set to any paint. They each have defaults.
   VideoViewProgressColors({
-    Color backgroundColor = const Color.fromRGBO(255, 255, 255, .4),
-    Color playedColor = const Color.fromRGBO(255, 255, 255, 1),
-    Color bufferedColor = const Color.fromRGBO(255, 255, 255, .7),
-    Color handleColor = const Color.fromRGBO(255, 255, 255, 1),
-  })  : backgroundPaint = Paint()..color = backgroundColor,
-        playedPaint = Paint()..color = playedColor,
-        bufferedPaint = Paint()..color = bufferedColor,
-        handlePaint = Paint()..color = handleColor,
-        handlePaintMore = Paint()..color = handleColor.withOpacity(.7);
+    this.backgroundColor = const Color.fromRGBO(255, 255, 255, .4),
+    this.playedColor = const Color.fromRGBO(255, 255, 255, 1),
+    this.bufferedColor = const Color.fromRGBO(255, 255, 255, .7),
+    this.handleColor = const Color.fromRGBO(255, 255, 255, 1),
+  }) : handleMoreColor = handleColor.withOpacity(.7);
 
-  /// [backgroundPaint] defaults to white at 40% opacity. This is the background
-  /// color behind both [playedPaint] and [bufferedPaint] to denote the total
+  /// [backgroundColor] defaults to white at 40% opacity. This is the background
+  /// color behind both [playedColor] and [bufferedColor] to denote the total
   /// size of the video compared to either of those values.
-  final Paint backgroundPaint;
+  final Color backgroundColor;
 
-  /// [playedPaint] defaults to white. This fills up a portion of the
+  /// [playedColor] defaults to white. This fills up a portion of the
   /// VideoProgressBar to represent how much of the video has played so far.
-  final Paint playedPaint;
+  final Color playedColor;
 
-  /// [bufferedPaint] defaults to white at 70% opacity. This fills up a portion
+  /// [bufferedColor] defaults to white at 70% opacity. This fills up a portion
   /// of VideoProgressBar to represent how much of the video has buffered so
   /// far.
-  final Paint bufferedPaint;
+  final Color bufferedColor;
 
-  /// [handlePaint] defaults to white. To represent the playback position of
+  /// [handleColor] defaults to white. To represent the playback position of
   /// the current video.
-  final Paint handlePaint;
+  final Color handleColor;
 
-  /// [handlePaintMore] defaults to white at 70% opacity. To represent the
+  /// [handleMoreColor] defaults to white at 70% opacity. To represent the
   /// playback position of the current video.
-  final Paint handlePaintMore;
+  final Color handleMoreColor;
 }

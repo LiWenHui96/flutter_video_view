@@ -22,7 +22,7 @@ abstract class VideoViewLocalizationsBase {
   /// Reinitialize.
   String get retry => getItem('retry').toString();
 
-  /// Double speed playback.
+  /// Maximum speed playback.
   String get speedPlay => getItem('speedPlay').toString();
 
   /// Description of detecting.

@@ -8,7 +8,7 @@ import 'base_controls.dart';
 /// @Date: 2022/6/16
 
 class ControlsCenter extends StatefulWidget {
-  /// Externally provided
+  // ignore: public_member_api_docs
   const ControlsCenter({Key? key}) : super(key: key);
 
   @override
@@ -49,6 +49,7 @@ class _ControlsCenterState extends BaseVideoViewControls<ControlsCenter> {
     return _AnimatedLockButton(
       isLock: controlsNotifier.isLock,
       canShowLock: canShowLock,
+      backgroundColor: videoViewConfig.tipBackgroundColor,
       color: videoViewConfig.foregroundColor,
       onPressed: () {
         controlsNotifier.isLock = !controlsNotifier.isLock;
@@ -67,7 +68,7 @@ class _ControlsCenterState extends BaseVideoViewControls<ControlsCenter> {
         padding:
             child is IconButton ? EdgeInsets.zero : const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.black45,
+          color: videoViewConfig.tipBackgroundColor,
           borderRadius: BorderRadius.circular(8),
         ),
         child: child,
@@ -85,12 +86,14 @@ class _AnimatedLockButton extends StatelessWidget {
     Key? key,
     required this.isLock,
     required this.canShowLock,
+    required this.backgroundColor,
     this.color = Colors.white,
     this.onPressed,
   }) : super(key: key);
 
   final bool isLock;
   final bool canShowLock;
+  final Color backgroundColor;
   final Color color;
   final VoidCallback? onPressed;
 
@@ -110,7 +113,7 @@ class _AnimatedLockButton extends StatelessWidget {
 
     child = DecoratedBox(
       decoration: BoxDecoration(
-        color: Colors.black45,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(8),
       ),
       child: child,

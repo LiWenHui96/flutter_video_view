@@ -15,7 +15,7 @@ class VideoViewLocalizationsDelegate
 
   /// Provided to [MaterialApp] for use.
   static const VideoViewLocalizationsDelegate delegate =
-  VideoViewLocalizationsDelegate();
+      VideoViewLocalizationsDelegate();
 
   @override
   bool isSupported(Locale locale) =>

@@ -11,7 +11,9 @@ import 'package:wakelock/wakelock.dart';
 import 'controls/video_view_controls.dart';
 import 'local/video_view_localizations.dart';
 import 'notifier/controls_notifier.dart';
+import 'utils/util_brightness.dart';
 import 'video_view_config.dart';
+import 'widgets/animated_play_pause.dart';
 import 'widgets/base_state.dart';
 
 /// @Describe: The view of video.
@@ -49,6 +51,9 @@ class _VideoViewState extends BaseState<VideoView> {
   void dispose() {
     controller.removeListener(listener);
     controller.dispose();
+
+    /// Reset screen brightness.
+    ScreenBrightnessUtil.resetScreenBrightness();
 
     super.dispose();
   }
@@ -168,24 +173,68 @@ class _VideoViewState extends BaseState<VideoView> {
             ),
           ),
         if (config.overlay != null) config.overlay!,
-        if (value.isBuffering)
-          config.bufferingPlaceholder ?? const CircularProgressIndicator(),
         SafeArea(
-          top: controller.isFullScreen,
+          top: false,
           bottom: false,
           child: config.showControls
               ? const VideoViewControls()
               : const SizedBox.shrink(),
         ),
+        _buildPlaceholderWidget(),
       ],
     );
+  }
+
+  Widget _buildPlaceholderWidget() {
+    final Map<VideoInitState, Widget> map =
+        config.placeholderBuilder ?? <VideoInitState, Widget>{};
+
+    if (controller.videoInitState == VideoInitState.none) {
+      return map[VideoInitState.none] ??
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(.9),
+              shape: BoxShape.circle,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: AnimatedPlayPause(
+                isPlaying: value.isPlaying,
+                size: 24,
+                onPressed: _initialize,
+              ),
+            ),
+          );
+    } else if (controller.videoInitState == VideoInitState.initializing) {
+      return map[VideoInitState.initializing] ??
+          const CircularProgressIndicator();
+    } else if (controller.videoInitState == VideoInitState.fail) {
+      return map[VideoInitState.fail] ??
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(local.loadFailed, style: defaultStyle),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: _initialize,
+                child: Text(local.retry, style: defaultStyle),
+              ),
+            ],
+          );
+    }
+
+    return const SizedBox.shrink();
   }
 
   bool get isControllerFullScreen => controller.isFullScreen;
 
   Future<void> _initialize() async => controller.initialize();
 
-  TextStyle get defaultStyle => TextStyle(color: config.foregroundColor);
+  TextStyle get defaultStyle => TextStyle(
+        fontSize: config.defaultTextSize,
+        color: config.foregroundColor,
+      );
 
   VideoViewLocalizations get local => VideoViewLocalizations.of(context);
 
@@ -404,6 +453,10 @@ abstract class _VideoViewNotifier extends ChangeNotifier {
 
   bool get hasError => videoPlayerController.value.hasError;
 
+  String? get errorDescription => videoPlayerController.value.errorDescription;
+
+  double get playbackSpeed => videoPlayerController.value.playbackSpeed;
+
   /// Initialize the controller.
   Future<void> initialize() async {
     /// This is the process of video initialization to obtain the relevant
@@ -494,12 +547,14 @@ abstract class _VideoViewNotifier extends ChangeNotifier {
   ///
   /// Defaults to maximum speed.
   Future<void> setPlaybackSpeed({double? speed}) async {
-    await videoPlayerController.setPlaybackSpeed(
-      speed ?? (defaultTargetPlatform == TargetPlatform.iOS ? 2.0 : 3.0),
-    );
+    await videoPlayerController.setPlaybackSpeed(speed ?? maxSpeed);
   }
 
+  double get maxSpeed =>
+      defaultTargetPlatform == TargetPlatform.iOS ? 2.0 : 3.0;
+
   /// Enter full-screen mode.
+  @protected
   Future<void> enterFullScreen() async {
     await SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,
@@ -510,6 +565,7 @@ abstract class _VideoViewNotifier extends ChangeNotifier {
   }
 
   /// Exit full-screen mode.
+  @protected
   Future<void> exitFullScreen() async {
     isFullScreen = false;
     await SystemChrome.setEnabledSystemUIMode(
@@ -546,11 +602,11 @@ abstract class _VideoViewNotifier extends ChangeNotifier {
 
 // ignore: public_member_api_docs
 typedef VideoViewRoutePageBuilder = Widget Function(
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-    VideoViewControllerInherited controllerProvider,
-    );
+  BuildContext context,
+  Animation<double> animation,
+  Animation<double> secondaryAnimation,
+  VideoViewControllerInherited controllerProvider,
+);
 
 // ignore: public_member_api_docs
 class VideoViewControllerInherited extends InheritedWidget {
