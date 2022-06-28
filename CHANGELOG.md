@@ -1,3 +1,8 @@
+## 1.0.1
+
+* Increase score.
+* Fix example.
+
 ## 1.0.0
 
 * Release the first edition.
