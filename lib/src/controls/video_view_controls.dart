@@ -209,9 +209,8 @@ class _VideoViewControlsState extends BaseVideoViewControls<VideoViewControls> {
   void _onHorizontalDragUpdate(DragUpdateDetails details) {
     if (canUse && controlsNotifier.isDragProgress) {
       final double relative = details.delta.dx / totalWidth;
-      final Duration duration = const Duration(minutes: 10) * relative;
       controlsNotifier.setDragDuration(
-        controlsNotifier.dragDuration + duration,
+        controlsNotifier.dragDuration + dragDuration * relative,
         totalDuration,
       );
     }

@@ -31,6 +31,9 @@ abstract class BaseVideoViewControls<T extends StatefulWidget>
   /// The total duration of the video.
   Duration totalDuration = Duration.zero;
 
+  /// The maximum interval for adjusting the duration.
+  Duration dragDuration = Duration.zero;
+
   /// The height of the action bar.
   final double barHeight = 48;
 
@@ -79,6 +82,7 @@ abstract class BaseVideoViewControls<T extends StatefulWidget>
       if (!videoPlayerValue.hasError) {
         currentDuration = videoPlayerValue.position;
         totalDuration = videoPlayerValue.duration;
+        dragDuration = _setDragDuration(totalDuration);
       }
     });
 
@@ -100,6 +104,21 @@ abstract class BaseVideoViewControls<T extends StatefulWidget>
         !videoPlayerValue.isInitialized &&
         videoPlayerValue.hasError) {
       controlsNotifier.isVisible = false;
+    }
+  }
+
+  /// Set the sliding time interval.
+  Duration _setDragDuration(Duration duration) {
+    if (duration < const Duration(minutes: 1)) {
+      return const Duration(seconds: 10);
+    } else if (duration < const Duration(minutes: 10)) {
+      return const Duration(minutes: 1);
+    } else if (duration < const Duration(minutes: 30)) {
+      return const Duration(minutes: 5);
+    } else if (duration < const Duration(hours: 1)) {
+      return const Duration(minutes: 10);
+    } else {
+      return const Duration(minutes: 15);
     }
   }
 
