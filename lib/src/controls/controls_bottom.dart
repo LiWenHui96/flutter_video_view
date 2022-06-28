@@ -34,6 +34,8 @@ class _ControlsBottomState extends BaseVideoViewControls<ControlsBottom> {
         ),
         Expanded(child: Row(children: _buildChildren())),
         _AnimatedFullscreen(
+          isFullscreen: videoViewController.isFullScreen,
+          color: videoViewConfig.foregroundColor,
           onPressed: () {
             if (canUse) {
               videoViewController.toggleFullScreen();
@@ -45,7 +47,6 @@ class _ControlsBottomState extends BaseVideoViewControls<ControlsBottom> {
               );
             }
           },
-          isFullscreen: videoViewController.isFullScreen,
         ),
       ],
     );

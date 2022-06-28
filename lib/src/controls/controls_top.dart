@@ -97,15 +97,11 @@ class _AnimatedText extends StatefulWidget {
   const _AnimatedText({
     Key? key,
     required this.child,
-    this.scrollSpeed = 40,
     this.stayDuration = const Duration(seconds: 1),
   })  : assert(child is Text, 'Must be Text.'),
         super(key: key);
 
   final Widget child;
-
-  /// Length of stride
-  final double scrollSpeed;
 
   /// Length of stay
   final Duration stayDuration;
@@ -155,8 +151,7 @@ class _AnimatedTextState extends BaseState<_AnimatedText> {
         await controller.animateTo(
           controller.position.maxScrollExtent,
           duration: Duration(
-            seconds: (controller.position.maxScrollExtent / widget.scrollSpeed)
-                .floor(),
+            seconds: (controller.position.maxScrollExtent / 40).floor(),
           ),
           curve: Curves.easeIn,
         );

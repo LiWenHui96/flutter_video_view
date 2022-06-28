@@ -434,20 +434,6 @@ abstract class _VideoViewNotifier extends ChangeNotifier {
     }
   }
 
-  bool get isPlaying => videoPlayerController.value.isPlaying;
-
-  bool get isInitialized => videoPlayerController.value.isInitialized;
-
-  bool get isLooping => videoPlayerController.value.isLooping;
-
-  bool get isBuffering => videoPlayerController.value.isBuffering;
-
-  bool get hasError => videoPlayerController.value.hasError;
-
-  String? get errorDescription => videoPlayerController.value.errorDescription;
-
-  double get playbackSpeed => videoPlayerController.value.playbackSpeed;
-
   /// Initialize the controller.
   Future<void> initialize() async {
     /// This is the process of video initialization to obtain the relevant
