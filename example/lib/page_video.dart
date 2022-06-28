@@ -27,8 +27,7 @@ class _VideoPageState extends State<VideoPage> {
         autoInitialize: true,
         // autoPlay: true,
         canUseSafe: true,
-        // canShowDevice: false,
-        // overlay: Image.network('https://liveimages.videocc.net/uploaded/images/2022/06/gaw8q0dl23.png'),
+        canShowDevice: false,
         title: 'This is a small video of the test',
         deviceOrientationsExitFullScreen: <DeviceOrientation>[
           DeviceOrientation.portraitUp,
