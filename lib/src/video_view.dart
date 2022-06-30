@@ -380,16 +380,23 @@ abstract class VideoViewNotifier extends ValueNotifier<VideoViewValue> {
 
     if (value.videoInitState == VideoInitState.fail) {
       isFirstInit ? isFirstInit = false : await initialize();
-      return;
     }
 
-    /// Update [VideoPlayerValue].
-    value = value.copyWith(videoPlayerValue: videoPlayerController.value);
+    if (value.videoInitState == VideoInitState.success) {
+      isFirstInit = false;
 
-    /// After initialization, obtain the aspect ratio and the direction of
-    /// video in full screen mode.
-    if (value.isInitialized && config.autoPlay) {
-      await play();
+      /// Update [VideoPlayerValue].
+      value = value.copyWith(
+        videoPlayerValue: videoPlayerController.value,
+        aspectRatio:
+            config.aspectRatio ?? videoPlayerController.value.aspectRatio,
+      );
+
+      /// After initialization, obtain the aspect ratio and the direction of
+      /// video in full screen mode.
+      if (config.autoPlay) {
+        await play();
+      }
     }
   }
 
@@ -405,6 +412,12 @@ abstract class VideoViewNotifier extends ValueNotifier<VideoViewValue> {
   /// Starts playing the video.
   Future<void> play() async {
     if (value.isInitialized) {
+      /// When there is an error in playing the video, it will be adjusted to
+      /// the corresponding progress during initialization.
+      if (value.position > Duration.zero) {
+        await seekTo(value.position);
+      }
+
       await videoPlayerController.play();
 
       _timer?.cancel();
@@ -413,15 +426,9 @@ abstract class VideoViewNotifier extends ValueNotifier<VideoViewValue> {
           _timer?.cancel();
           return;
         }
-        final VideoPlayerValue videoPlayerValue = videoPlayerController.value;
-        value = value.copyWith(videoPlayerValue: videoPlayerValue);
-        if (!videoPlayerValue.hasError) {
-          value = value.copyWith(position: videoPlayerValue.position);
-        } else {
-          _timer?.cancel();
-        }
+        value = value.copyWith(videoPlayerValue: videoPlayerController.value);
 
-        if (value.isFinish && !videoPlayerValue.isPlaying) {
+        if (value.hasError || (value.isFinish && !value.isPlaying)) {
           _timer?.cancel();
           if (value.isMaxSpeed) {
             await setPlaybackSpeed(speed: 1);
@@ -434,6 +441,13 @@ abstract class VideoViewNotifier extends ValueNotifier<VideoViewValue> {
             isDragProgress: false,
             dragDuration: Duration.zero,
           );
+        }
+
+        if (!value.hasError) {
+          value =
+              value.copyWith(position: videoPlayerController.value.position);
+        } else {
+          await initialize().then((_) => play());
         }
       });
     }
@@ -633,6 +647,7 @@ class VideoViewValue {
     required this.videoPlayerValue,
     required this.videoViewConfig,
     this.videoInitState = VideoInitState.none,
+    this.aspectRatio = 1.0,
     this.duration = Duration.zero,
     this.position = Duration.zero,
     this.isFullScreen = false,
@@ -655,6 +670,9 @@ class VideoViewValue {
 
   /// The current initialization state of the video.
   VideoInitState videoInitState;
+
+  /// The parameters set by the developer are preferred.
+  final double aspectRatio;
 
   /// The total duration of the video.
   ///
@@ -728,10 +746,6 @@ class VideoViewValue {
   /// Degrees to rotate the video (clockwise) so it is displayed correctly.
   int get rotationCorrection => videoPlayerValue.rotationCorrection;
 
-  /// The parameters set by the developer are preferred.
-  double get aspectRatio =>
-      videoViewConfig.aspectRatio ?? videoPlayerValue.aspectRatio;
-
   /// The [Caption] that should be displayed based on the current [position].
   ///
   /// This field will never be null. If there is no caption for the current
@@ -794,6 +808,7 @@ class VideoViewValue {
     VideoPlayerValue? videoPlayerValue,
     VideoViewConfig? videoViewConfig,
     VideoInitState? videoInitState,
+    double? aspectRatio,
     Duration? duration,
     Duration? position,
     bool? isFullScreen,
@@ -810,6 +825,7 @@ class VideoViewValue {
       videoPlayerValue: videoPlayerValue ?? this.videoPlayerValue,
       videoViewConfig: videoViewConfig ?? this.videoViewConfig,
       videoInitState: videoInitState ?? this.videoInitState,
+      aspectRatio: aspectRatio ?? this.aspectRatio,
       duration: duration ?? this.duration,
       position: position ?? this.position,
       isFullScreen: isFullScreen ?? this.isFullScreen,

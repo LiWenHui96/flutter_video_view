@@ -102,17 +102,10 @@ abstract class BaseVideoViewControls<T extends StatefulWidget>
         videoViewController.pause();
       } else {
         showOrHide(visible: true);
-
-        if (videoViewValue.isInitialized) {
-          if (videoViewValue.position >= videoViewValue.duration) {
-            videoViewController.seekTo(Duration.zero);
-          }
-          videoViewController.play();
-        } else {
-          videoViewController
-              .initialize()
-              .then((_) => videoViewController.play());
+        if (videoViewValue.position >= videoViewValue.duration) {
+          videoViewController.seekTo(Duration.zero);
         }
+        videoViewController.play();
       }
     }
   }
