@@ -12,6 +12,7 @@ environment:
 dependencies:
   battery_plus: ^2.1.0
   connectivity_plus: ^2.3.0
+  event_bus: ^2.0.0
   flutter:
     sdk: flutter
   provider: ^6.0.0

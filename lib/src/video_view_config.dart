@@ -18,7 +18,7 @@ class VideoViewConfig {
     this.foregroundColor = Colors.white,
     this.defaultTextSize = 14,
     this.defaultIconSize = 16,
-    this.canUseSafe = false,
+    this.canUseSafe = true,
     this.maxScale = 2.5,
     this.minScale = 0.8,
     this.panEnabled = false,
@@ -27,7 +27,8 @@ class VideoViewConfig {
     this.allowedScreenSleep = true,
     this.autoInitialize = false,
     this.autoPlay = false,
-    this.startAt,
+    this.startAt = Duration.zero,
+    this.volume = 1.0,
     this.looping = false,
     this.overlay,
     this.placeholderBuilder,
@@ -44,8 +45,7 @@ class VideoViewConfig {
     this.showControls = true,
     this.hideControlsTimer = const Duration(seconds: 3),
     this.controlsBackgroundColor = const <Color>[
-      Color.fromRGBO(0, 0, 0, .7),
-      Color.fromRGBO(0, 0, 0, .3),
+      Color.fromRGBO(0, 0, 0, .6),
       Color.fromRGBO(0, 0, 0, 0),
     ],
     this.canLongPress = true,
@@ -53,9 +53,9 @@ class VideoViewConfig {
     this.canChangeProgress = true,
     this.title,
     this.titleTextStyle,
-    this.canShowDevice = true,
+    this.canShowDevice = false,
     this.topActions,
-    this.canShowLock = true,
+    this.canShowLock = false,
     this.centerLeftActions,
     this.centerRightActions,
     this.textPosition,
@@ -152,7 +152,10 @@ class VideoViewConfig {
   /// Where does the video start playing when it first plays.
   ///
   /// Defaults to zero.
-  final Duration? startAt;
+  final Duration startAt;
+
+  /// The volume of the video, not the device volume.
+  final double volume;
 
   /// Whether the video is looped.
   ///

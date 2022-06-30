@@ -35,8 +35,8 @@ class _ControlsTopState extends BaseVideoViewControls<ControlsTop> {
           ),
         Expanded(
           child: videoViewConfig.title != null &&
-                  videoViewController.isFullScreen &&
-                  !videoViewController.isPortrait
+                  videoViewValue.isFullScreen &&
+                  !videoViewValue.isPortrait
               ? _AnimatedText(
                   child: Text(
                     videoViewConfig.title!,
@@ -52,7 +52,7 @@ class _ControlsTopState extends BaseVideoViewControls<ControlsTop> {
         ),
         Row(
           children: videoViewConfig.topActions
-                  ?.call(context, videoViewController.isFullScreen) ??
+                  ?.call(context, videoViewValue.isFullScreen) ??
               <Widget>[],
         ),
       ],
@@ -87,24 +87,18 @@ class _ControlsTopState extends BaseVideoViewControls<ControlsTop> {
 
   bool get isShowDevice =>
       videoViewConfig.canShowDevice &&
-      videoViewController.isFullScreen &&
-      !videoViewController.isPortrait;
+      videoViewValue.isFullScreen &&
+      !videoViewValue.isPortrait;
 
   Color get foregroundColor => videoViewConfig.foregroundColor;
 }
 
 class _AnimatedText extends StatefulWidget {
-  const _AnimatedText({
-    Key? key,
-    required this.child,
-    this.stayDuration = const Duration(seconds: 1),
-  })  : assert(child is Text, 'Must be Text.'),
+  const _AnimatedText({Key? key, required this.child})
+      : assert(child is Text, 'Must be Text.'),
         super(key: key);
 
   final Widget child;
-
-  /// Length of stay
-  final Duration stayDuration;
 
   @override
   State<_AnimatedText> createState() => _AnimatedTextState();
@@ -112,6 +106,7 @@ class _AnimatedText extends StatefulWidget {
 
 class _AnimatedTextState extends BaseState<_AnimatedText> {
   final ScrollController controller = ScrollController();
+  final Duration stayDuration = const Duration(seconds: 1);
 
   @override
   void initState() {
@@ -141,12 +136,12 @@ class _AnimatedTextState extends BaseState<_AnimatedText> {
     await Future<void>.delayed(Duration.zero);
 
     while (true) {
-      await Future<void>.delayed(widget.stayDuration);
+      await Future<void>.delayed(stayDuration);
       if (controller.positions.isNotEmpty) {
         controller.jumpTo(0);
       }
 
-      await Future<void>.delayed(widget.stayDuration);
+      await Future<void>.delayed(stayDuration);
       if (controller.positions.isNotEmpty) {
         await controller.animateTo(
           controller.position.maxScrollExtent,

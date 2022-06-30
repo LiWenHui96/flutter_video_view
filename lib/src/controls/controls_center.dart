@@ -26,8 +26,8 @@ class _ControlsCenterState extends BaseVideoViewControls<ControlsCenter> {
           _actions(
             videoViewConfig.centerLeftActions?.call(
               context,
-              videoViewController.isFullScreen,
-              controlsNotifier.isLock,
+              videoViewValue.isFullScreen,
+              videoViewValue.isLock,
               _lockButton(),
             ),
           ),
@@ -35,8 +35,8 @@ class _ControlsCenterState extends BaseVideoViewControls<ControlsCenter> {
           _actions(
             videoViewConfig.centerRightActions?.call(
               context,
-              videoViewController.isFullScreen,
-              controlsNotifier.isLock,
+              videoViewValue.isFullScreen,
+              videoViewValue.isLock,
               _lockButton(),
             ),
           ),
@@ -47,12 +47,12 @@ class _ControlsCenterState extends BaseVideoViewControls<ControlsCenter> {
 
   _AnimatedLockButton _lockButton() {
     return _AnimatedLockButton(
-      isLock: controlsNotifier.isLock,
+      isLock: videoViewValue.isLock,
       canShowLock: canShowLock,
       backgroundColor: videoViewConfig.tipBackgroundColor,
       color: videoViewConfig.foregroundColor,
       onPressed: () {
-        controlsNotifier.isLock = !controlsNotifier.isLock;
+        videoViewController.setLock(isLock: !videoViewValue.isLock);
         showOrHide(visible: true);
       },
     );

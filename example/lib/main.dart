@@ -58,11 +58,8 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final Widget child = Center(
       child: ElevatedButton(
-        onPressed: () async => Navigator.pushNamed(
-          context,
-          'video',
-          arguments: url,
-        ),
+        onPressed: () async =>
+            Navigator.pushNamed(context, 'video', arguments: url),
         child: const Text('视频'),
       ),
     );
@@ -74,9 +71,18 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-/// 对于状态栏、导航栏整体处理
+/// Handle the status bar and navigation bar as a whole.
 Future<void> redoSystemStyle({bool isPortrait = true}) async {
-  await redoOrientation(isPortrait: isPortrait);
+  if (isPortrait) {
+    await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
+      DeviceOrientation.portraitUp,
+    ]);
+  } else {
+    await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+  }
 
   await SystemChrome.setEnabledSystemUIMode(
     SystemUiMode.manual,
@@ -90,20 +96,4 @@ Future<void> redoSystemStyle({bool isPortrait = true}) async {
       systemNavigationBarContrastEnforced: true,
     ),
   );
-}
-
-/// 对于横竖屏的处理
-Future<void> redoOrientation({bool isPortrait = true}) async {
-  if (isPortrait) {
-    /// 竖屏
-    await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
-      DeviceOrientation.portraitUp,
-    ]);
-  } else {
-    /// 横屏
-    await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
-  }
 }

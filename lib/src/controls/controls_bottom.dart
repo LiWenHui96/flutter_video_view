@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_video_view/src/video_view.dart';
 import 'package:flutter_video_view/src/video_view_config.dart';
 import 'package:flutter_video_view/src/widgets/animated_play_pause.dart';
 import 'package:flutter_video_view/src/widgets/base_state.dart';
@@ -30,16 +30,17 @@ class _ControlsBottomState extends BaseVideoViewControls<ControlsBottom> {
         AnimatedPlayPause(
           onPressed: playOrPause,
           color: videoViewConfig.foregroundColor,
-          isPlaying: videoPlayerValue.isPlaying,
+          isPlaying: videoViewValue.isPlaying,
         ),
         Expanded(child: Row(children: _buildChildren())),
         _AnimatedFullscreen(
-          isFullscreen: videoViewController.isFullScreen,
+          isFullscreen: videoViewValue.isFullScreen,
           color: videoViewConfig.foregroundColor,
           onPressed: () {
             if (canUse) {
-              videoViewController.toggleFullScreen();
-              controlsNotifier.isLock = false;
+              videoViewController.setFullScreen(
+                isFullScreen: !videoViewValue.isFullScreen,
+              );
 
               Future<void>.delayed(
                 const Duration(milliseconds: 300),
@@ -52,8 +53,7 @@ class _ControlsBottomState extends BaseVideoViewControls<ControlsBottom> {
     );
 
     return Container(
-      height: barHeight + bottomBarHeight,
-      padding: EdgeInsets.only(bottom: bottomBarHeight),
+      height: barHeight,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.bottomCenter,
@@ -97,11 +97,11 @@ class _ControlsBottomState extends BaseVideoViewControls<ControlsBottom> {
   SizedBox get divider => const SizedBox(width: 10);
 
   Widget _buildPosition() {
-    return Text(formatDuration(currentDuration), style: defaultStyle);
+    return Text(formatDuration(videoViewValue.position), style: defaultStyle);
   }
 
   Widget _buildDuration() {
-    String text = formatDuration(totalDuration);
+    String text = formatDuration(videoViewValue.duration);
 
     if (textPosition == VideoTextPosition.ltl ||
         textPosition == VideoTextPosition.rtr) {
@@ -115,39 +115,31 @@ class _ControlsBottomState extends BaseVideoViewControls<ControlsBottom> {
     return Expanded(
       child: _VideoProgressBar(
         colors: videoViewConfig.videoViewProgressColors,
-        currentDuration: currentDuration,
-        totalDuration: totalDuration,
-        value: videoPlayerValue,
-        isDrag: controlsNotifier.isDragProgress,
-        dragPosition: controlsNotifier.dragDuration,
+        value: videoViewValue,
         onDragStart: (DragStartDetails details) {
           if (canUse) {
-            controlsNotifier.isDragProgress = true;
+            videoViewController.setDragProgress(isDragProgress: true);
           }
         },
         onDragUpdate: (double relative) {
-          if (canUse && controlsNotifier.isDragProgress) {
+          if (canUse && videoViewValue.isDragProgress) {
             showOrHide(visible: true, startTimer: false);
-            controlsNotifier.setDragDuration(
-              totalDuration * relative,
-              totalDuration,
-            );
+            videoViewController
+                .setDragDuration(videoViewValue.duration * relative);
           }
         },
         onDragEnd: (DragEndDetails details) {
-          if (controlsNotifier.isDragProgress) {
-            controlsNotifier.isDragProgress = false;
+          if (videoViewValue.isDragProgress) {
+            videoViewController.setDragProgress(isDragProgress: false);
             showOrHide(visible: true);
-            videoViewController.seekTo(controlsNotifier.dragDuration);
+            videoViewController.seekTo(videoViewValue.dragDuration);
           }
         },
         onTapUp: (double relative) {
           if (canUse) {
-            controlsNotifier.setDragDuration(
-              totalDuration * relative,
-              totalDuration,
-            );
-            videoViewController.seekTo(controlsNotifier.dragDuration);
+            videoViewController
+                .setDragDuration(videoViewValue.duration * relative);
+            videoViewController.seekTo(videoViewValue.dragDuration);
           }
         },
       ),
@@ -160,14 +152,8 @@ class _ControlsBottomState extends BaseVideoViewControls<ControlsBottom> {
       );
 
   VideoTextPosition get textPosition =>
-      videoViewConfig.textPosition?.call(videoViewController.isFullScreen) ??
+      videoViewConfig.textPosition?.call(videoViewValue.isFullScreen) ??
       VideoTextPosition.ltl;
-
-  double get bottomBarHeight => videoViewController.isFullScreen
-      ? videoViewController.isPortrait
-          ? MediaQueryData.fromWindow(window).padding.bottom
-          : 12
-      : 0;
 }
 
 class _AnimatedFullscreen extends StatelessWidget {
@@ -202,11 +188,7 @@ class _VideoProgressBar extends StatefulWidget {
   _VideoProgressBar({
     Key? key,
     VideoViewProgressColors? colors,
-    required this.currentDuration,
-    required this.totalDuration,
     required this.value,
-    required this.isDrag,
-    required this.dragPosition,
     required this.onDragStart,
     required this.onDragUpdate,
     required this.onDragEnd,
@@ -215,11 +197,7 @@ class _VideoProgressBar extends StatefulWidget {
         super(key: key);
 
   final VideoViewProgressColors colors;
-  final Duration currentDuration;
-  final Duration totalDuration;
-  final VideoPlayerValue value;
-  final bool isDrag;
-  final Duration dragPosition;
+  final VideoViewValue value;
   final GestureDragStartCallback onDragStart;
   final ValueChanged<double> onDragUpdate;
   final GestureDragEndCallback onDragEnd;
@@ -243,14 +221,8 @@ class _VideoProgressBarState extends BaseState<_VideoProgressBar> {
         width: MediaQuery.of(context).size.width,
         color: Colors.transparent,
         child: CustomPaint(
-          painter: _ProgressBarPainter(
-            currentDuration: widget.currentDuration,
-            totalDuration: widget.totalDuration,
-            value: widget.value,
-            colors: widget.colors,
-            isDrag: widget.isDrag,
-            dragPosition: widget.dragPosition,
-          ),
+          painter:
+              _ProgressBarPainter(value: widget.value, colors: widget.colors),
         ),
       ),
     );
@@ -270,21 +242,10 @@ class _VideoProgressBarState extends BaseState<_VideoProgressBar> {
 }
 
 class _ProgressBarPainter extends CustomPainter {
-  _ProgressBarPainter({
-    required this.currentDuration,
-    required this.totalDuration,
-    required this.value,
-    required this.colors,
-    this.isDrag = false,
-    this.dragPosition = Duration.zero,
-  });
+  _ProgressBarPainter({required this.value, required this.colors});
 
-  final Duration currentDuration;
-  final Duration totalDuration;
-  final VideoPlayerValue value;
+  final VideoViewValue value;
   final VideoViewProgressColors colors;
-  final bool isDrag;
-  final Duration dragPosition;
 
   @override
   bool shouldRepaint(CustomPainter painter) {
@@ -312,8 +273,9 @@ class _ProgressBarPainter extends CustomPainter {
       return;
     }
     final double playedPartPercent =
-        (isDrag ? dragPosition : currentDuration).inMilliseconds /
-            totalDuration.inMilliseconds;
+        (value.isDragProgress ? value.dragDuration : value.position)
+                .inMilliseconds /
+            value.duration.inMilliseconds;
     final double playedPart = handleValue(playedPartPercent) * size.width;
     canvas
       ..drawRRect(
@@ -328,18 +290,18 @@ class _ProgressBarPainter extends CustomPainter {
       )
       ..drawCircle(
         Offset(playedPart, halfHeight + height / 2),
-        height * (isDrag ? 3 : 2),
+        height * (value.isDragProgress ? 3 : 2),
         Paint()..color = colors.handleColor,
       )
       ..drawCircle(
         Offset(playedPart, halfHeight + height / 2),
-        height * (isDrag ? 5 : 3),
+        height * (value.isDragProgress ? 5 : 3),
         Paint()..color = colors.handleMoreColor,
       );
 
     for (final DurationRange range in value.buffered) {
-      final double start = range.startFraction(totalDuration) * size.width;
-      final double end = range.endFraction(totalDuration) * size.width;
+      final double start = range.startFraction(value.duration) * size.width;
+      final double end = range.endFraction(value.duration) * size.width;
       final Offset a = Offset(start, halfHeight);
       final Offset b = Offset(end, halfHeight + height);
       canvas.drawRRect(

@@ -2,12 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_video_view/src/notifier/controls_notifier.dart';
 import 'package:flutter_video_view/src/video_view.dart';
 import 'package:flutter_video_view/src/video_view_config.dart';
 import 'package:flutter_video_view/src/widgets/base_state.dart';
-import 'package:provider/provider.dart';
-import 'package:video_player/video_player.dart';
 
 /// @Describe: Base for VideoViewControls.
 ///
@@ -17,22 +14,11 @@ import 'package:video_player/video_player.dart';
 abstract class BaseVideoViewControls<T extends StatefulWidget>
     extends BaseState<T> {
   VideoViewController? _videoViewController;
-  late VideoPlayerController _videoPlayerController;
-  late VideoPlayerValue _videoPlayerValue;
+  late VideoViewValue _videoViewValue;
   late VideoViewConfig _videoViewConfig;
-  late ControlsNotifier _controlsNotifier;
 
   /// Timer
   Timer? hideTimer;
-
-  /// The current playback position.
-  Duration currentDuration = Duration.zero;
-
-  /// The total duration of the video.
-  Duration totalDuration = Duration.zero;
-
-  /// The maximum interval for adjusting the duration.
-  Duration dragDuration = Duration.zero;
 
   /// The height of the action bar.
   final double barHeight = 48;
@@ -44,9 +30,8 @@ abstract class BaseVideoViewControls<T extends StatefulWidget>
   void didChangeDependencies() {
     final VideoViewController? oldController = _videoViewController;
     _videoViewController = VideoViewController.of(context);
-    _videoPlayerController = videoViewController.videoPlayerController;
-    _videoViewConfig = videoViewController.videoViewConfig;
-    _controlsNotifier = context.watch<ControlsNotifier>();
+    _videoViewValue = videoViewController.value;
+    _videoViewConfig = videoViewValue.videoViewConfig;
 
     if (oldController != _videoViewController) {
       _dispose();
@@ -67,28 +52,21 @@ abstract class BaseVideoViewControls<T extends StatefulWidget>
   void _initialize() {
     /// Update data.
     _updateState();
-    _videoPlayerController.addListener(_updateState);
+    _videoViewController?.addListener(_updateState);
 
     initialize();
   }
 
   void _dispose() {
-    _videoPlayerController.removeListener(_updateState);
+    _videoViewController?.removeListener(_updateState);
   }
 
   void _updateState() {
-    setState(() {
-      _videoPlayerValue = _videoPlayerController.value;
-      if (!videoPlayerValue.hasError) {
-        currentDuration = videoPlayerValue.position;
-        totalDuration = videoPlayerValue.duration;
-        dragDuration = _setDragDuration(totalDuration);
-      }
-    });
+    setState(() => _videoViewValue = videoViewController.value);
 
     SystemChrome.setSystemUIChangeCallback(
         (bool systemOverlaysAreVisible) async {
-      if (!systemOverlaysAreVisible && videoViewController.isFullScreen) {
+      if (!systemOverlaysAreVisible && videoViewValue.isFullScreen) {
         await SystemChrome.setEnabledSystemUIMode(
           SystemUiMode.manual,
           overlays: videoViewConfig.systemOverlaysEnterFullScreen ??
@@ -96,30 +74,6 @@ abstract class BaseVideoViewControls<T extends StatefulWidget>
         );
       }
     });
-
-    /// When the initialization is unsuccessful and the video playback error
-    /// occurs, and the controller is in the displayed state, the controller
-    /// is hidden.
-    if (controlsNotifier.isVisible &&
-        !videoPlayerValue.isInitialized &&
-        videoPlayerValue.hasError) {
-      controlsNotifier.isVisible = false;
-    }
-  }
-
-  /// Set the sliding time interval.
-  Duration _setDragDuration(Duration duration) {
-    if (duration < const Duration(minutes: 1)) {
-      return const Duration(seconds: 10);
-    } else if (duration < const Duration(minutes: 10)) {
-      return const Duration(minutes: 1);
-    } else if (duration < const Duration(minutes: 30)) {
-      return const Duration(minutes: 5);
-    } else if (duration < const Duration(hours: 1)) {
-      return const Duration(minutes: 10);
-    } else {
-      return const Duration(minutes: 15);
-    }
   }
 
   /// Initialization methods that can be used externally.
@@ -131,8 +85,10 @@ abstract class BaseVideoViewControls<T extends StatefulWidget>
   void showOrHide({bool? visible, bool startTimer = true}) {
     hideTimer?.cancel();
 
-    controlsNotifier.isVisible = visible ?? !controlsNotifier.isVisible;
-    if (controlsNotifier.isVisible && startTimer) {
+    videoViewController.setVisible(
+      isVisible: visible ?? !videoViewValue.isVisible,
+    );
+    if (videoViewValue.isVisible && startTimer) {
       startHideTimer();
     }
   }
@@ -141,14 +97,14 @@ abstract class BaseVideoViewControls<T extends StatefulWidget>
   @protected
   void playOrPause() {
     if (canUse) {
-      if (videoPlayerValue.isPlaying) {
+      if (videoViewValue.isPlaying) {
         showOrHide(visible: true, startTimer: false);
         videoViewController.pause();
       } else {
         showOrHide(visible: true);
 
-        if (videoPlayerValue.isInitialized) {
-          if (currentDuration >= totalDuration) {
+        if (videoViewValue.isInitialized) {
+          if (videoViewValue.position >= videoViewValue.duration) {
             videoViewController.seekTo(Duration.zero);
           }
           videoViewController.play();
@@ -166,7 +122,7 @@ abstract class BaseVideoViewControls<T extends StatefulWidget>
   void startHideTimer() {
     hideTimer = Timer(
       videoViewConfig.hideControlsTimer,
-      () => controlsNotifier.isVisible = false,
+      () => videoViewController.setVisible(isVisible: false),
     );
   }
 
@@ -188,24 +144,18 @@ abstract class BaseVideoViewControls<T extends StatefulWidget>
 
   /// Whether the operation can be performed.
   bool get canUse =>
-      !controlsNotifier.isLock &&
-      videoPlayerValue.isInitialized &&
-      videoViewController.videoInitState == VideoInitState.success;
+      !videoViewValue.isLock &&
+      videoViewValue.isInitialized &&
+      videoViewValue.videoInitState == VideoInitState.success;
 
   // ignore: public_member_api_docs
   VideoViewController get videoViewController => _videoViewController!;
 
   // ignore: public_member_api_docs
-  VideoPlayerController get videoPlayerController => _videoPlayerController;
-
-  // ignore: public_member_api_docs
-  VideoPlayerValue get videoPlayerValue => _videoPlayerValue;
+  VideoViewValue get videoViewValue => _videoViewValue;
 
   // ignore: public_member_api_docs
   VideoViewConfig get videoViewConfig => _videoViewConfig;
-
-  // ignore: public_member_api_docs
-  ControlsNotifier get controlsNotifier => _controlsNotifier;
 }
 
 /// Calculate hours, minutes and seconds through Duration.

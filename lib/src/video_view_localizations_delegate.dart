@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'video_view_localizations.dart';
+import 'local/video_view_localizations.dart';
 
 /// @Describe: LocalizationsDelegate
 ///

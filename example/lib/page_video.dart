@@ -25,9 +25,6 @@ class _VideoPageState extends State<VideoPage> {
         height: 260,
         // aspectRatio: MediaQueryData.fromWindow(window).size.width / 260,
         autoInitialize: true,
-        // autoPlay: true,
-        canUseSafe: true,
-        canShowDevice: false,
         title: 'This is a small video of the test',
         deviceOrientationsExitFullScreen: <DeviceOrientation>[
           DeviceOrientation.portraitUp,

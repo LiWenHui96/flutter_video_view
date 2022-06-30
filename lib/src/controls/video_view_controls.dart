@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_video_view/src/local/video_view_localizations.dart';
 import 'package:flutter_video_view/src/utils/util_brightness.dart';
 import 'package:flutter_video_view/src/utils/util_volume.dart';
+import 'package:flutter_video_view/src/video_view.dart';
 import 'package:flutter_video_view/src/widgets/base_state.dart';
 
 import 'base_controls.dart';
@@ -32,22 +33,19 @@ class _VideoViewControlsState extends BaseVideoViewControls<VideoViewControls> {
       children: <Widget>[
         Column(
           children: <Widget>[
-            if (!controlsNotifier.isLock) const ControlsTop(),
+            if (!videoViewValue.isLock) const ControlsTop(),
             const Spacer(),
-            if (!controlsNotifier.isLock) const ControlsBottom(),
+            if (!videoViewValue.isLock) const ControlsBottom(),
           ],
         ),
-        if (videoPlayerValue.isBuffering)
-          videoViewConfig.bufferingPlaceholder ??
-              const CircularProgressIndicator(),
-        if (videoViewController.isFullScreen) const ControlsCenter(),
+        if (videoViewValue.isFullScreen) const ControlsCenter(),
       ],
     );
 
     child = AbsorbPointer(
-      absorbing: !controlsNotifier.isVisible,
+      absorbing: !videoViewValue.isVisible,
       child: AnimatedOpacity(
-        opacity: controlsNotifier.isVisible ? 1.0 : .0,
+        opacity: videoViewValue.isVisible ? 1.0 : .0,
         duration: defaultHideDuration,
         child: child,
       ),
@@ -68,11 +66,9 @@ class _VideoViewControlsState extends BaseVideoViewControls<VideoViewControls> {
       child: child,
     );
 
-    if (!videoPlayerValue.isLooping &&
-        totalDuration != Duration.zero &&
-        currentDuration >= totalDuration) {
+    if (videoViewValue.isFinish) {
       return videoViewConfig.finishBuilder
-              ?.call(context, videoViewController.isFullScreen) ??
+              ?.call(context, videoViewValue.isFullScreen) ??
           Container(
             color: videoViewConfig.tipBackgroundColor,
             child: Stack(
@@ -113,7 +109,7 @@ class _VideoViewControlsState extends BaseVideoViewControls<VideoViewControls> {
 
   @override
   Future<void> initialize() async {
-    if (videoPlayerValue.isPlaying || videoViewConfig.autoPlay) {
+    if (videoViewValue.isPlaying || videoViewConfig.autoPlay) {
       startHideTimer();
     }
 
@@ -127,23 +123,23 @@ class _VideoViewControlsState extends BaseVideoViewControls<VideoViewControls> {
 
   @override
   Widget tipWidget({Widget? child}) {
-    if (controlsNotifier.isMaxSpeed) {
+    if (videoViewValue.isMaxSpeed) {
       child = _MaxSpeedPlay(
         size: videoViewConfig.defaultIconSize,
         color: foregroundColor,
       );
     }
-    if (controlsNotifier.isVerticalDrag) {
+    if (videoViewValue.isVerticalDrag) {
       child = _ViewProgressIndicator(
-        value: controlsNotifier.currentValue,
-        isDragLeft: controlsNotifier.isVerticalDragLeft,
+        value: videoViewValue.verticalDragValue,
+        verticalDragType: videoViewValue.verticalDragType,
         size: videoViewConfig.defaultIconSize,
         color: foregroundColor,
       );
     }
-    if (controlsNotifier.isDragProgress) {
+    if (videoViewValue.isDragProgress) {
       child = Text(
-        '${formatDuration(controlsNotifier.dragDuration)} / ${formatDuration(totalDuration)}',
+        '${formatDuration(videoViewValue.dragDuration)} / ${formatDuration(videoViewValue.duration)}',
         style: TextStyle(
           fontSize: videoViewConfig.defaultTextSize,
           color: foregroundColor,
@@ -156,70 +152,82 @@ class _VideoViewControlsState extends BaseVideoViewControls<VideoViewControls> {
   void _onLongPressStart(LongPressStartDetails details) {
     if (videoViewConfig.canLongPress &&
         canUse &&
-        videoPlayerValue.isPlaying &&
-        videoPlayerValue.playbackSpeed < videoViewController.maxSpeed) {
-      controlsNotifier.isMaxSpeed = true;
+        videoViewValue.isPlaying &&
+        videoViewValue.playbackSpeed < videoViewController.maxSpeed) {
+      videoViewController.setMaxSpeed(isMaxSpeed: true);
       videoViewController.setPlaybackSpeed();
     }
   }
 
   void _onLongPressEnd(LongPressEndDetails details) {
-    if (controlsNotifier.isMaxSpeed) {
-      controlsNotifier.isMaxSpeed = false;
+    if (videoViewValue.isMaxSpeed) {
+      videoViewController.setMaxSpeed(isMaxSpeed: false);
       videoViewController.setPlaybackSpeed(speed: 1);
     }
   }
 
   Future<void> _onVerticalDragStart(DragStartDetails details) async {
     if (videoViewConfig.canChangeVolumeOrBrightness && canUse) {
-      controlsNotifier.isVerticalDragLeft =
-          details.globalPosition.dx < totalWidth / 2;
-      controlsNotifier.currentValue = controlsNotifier.isVerticalDragLeft
-          ? await ScreenBrightnessUtil.current
-          : await VolumeUtil.current;
-      controlsNotifier.isVerticalDrag = true;
+      videoViewController.setVerticalDrag(isVerticalDrag: true);
+      videoViewController.setVerticalDragType(
+        verticalDragType: details.globalPosition.dx < totalWidth / 2
+            ? VerticalDragType.brightness
+            : VerticalDragType.volume,
+      );
+
+      double currentValue = 0;
+      if (videoViewValue.verticalDragType == VerticalDragType.brightness) {
+        currentValue = await ScreenBrightnessUtil.current;
+      } else if (videoViewValue.verticalDragType == VerticalDragType.volume) {
+        currentValue = await VolumeUtil.current;
+      }
+      videoViewController.setVerticalDragValue(verticalDragValue: currentValue);
     }
   }
 
   Future<void> _onVerticalDragUpdate(DragUpdateDetails details) async {
-    if (canUse && controlsNotifier.isVerticalDrag) {
-      controlsNotifier.currentValue =
-          controlsNotifier.currentValue - (details.delta.dy / totalHeight);
-      controlsNotifier.isVerticalDragLeft
-          ? await ScreenBrightnessUtil.setScreenBrightness(
-              controlsNotifier.currentValue,
-            )
-          : VolumeUtil.setVolume(controlsNotifier.currentValue);
+    if (canUse && videoViewValue.isVerticalDrag) {
+      videoViewController.setVerticalDragValue(
+        verticalDragValue:
+            videoViewValue.verticalDragValue - (details.delta.dy / totalHeight),
+      );
+      if (videoViewValue.verticalDragType == VerticalDragType.brightness) {
+        await ScreenBrightnessUtil.setScreenBrightness(
+          videoViewValue.verticalDragValue,
+        );
+      } else if (videoViewValue.verticalDragType == VerticalDragType.volume) {
+        await VolumeUtil.setVolume(videoViewValue.verticalDragValue);
+      }
     }
   }
 
   void _onVerticalDragEnd(DragEndDetails details) {
-    if (controlsNotifier.isVerticalDrag) {
-      controlsNotifier.isVerticalDrag = false;
+    if (videoViewValue.isVerticalDrag) {
+      videoViewController.setVerticalDrag(isVerticalDrag: false);
     }
   }
 
   void _onHorizontalDragStart(DragStartDetails details) {
     if (videoViewConfig.canChangeProgress && canUse) {
-      controlsNotifier.isDragProgress = true;
-      controlsNotifier.dragDuration = videoPlayerValue.position;
+      videoViewController.setDragProgress(isDragProgress: true);
+      videoViewController.setDragDuration(videoViewValue.position);
     }
   }
 
   void _onHorizontalDragUpdate(DragUpdateDetails details) {
-    if (canUse && controlsNotifier.isDragProgress) {
+    if (canUse && videoViewValue.isDragProgress) {
       final double relative = details.delta.dx / totalWidth;
-      controlsNotifier.setDragDuration(
-        controlsNotifier.dragDuration + dragDuration * relative,
-        totalDuration,
+      videoViewController.setDragDuration(
+        videoViewValue.dragDuration +
+            videoViewValue.dragTotalDuration * relative,
       );
     }
   }
 
   void _onHorizontalDragEnd(DragEndDetails details) {
-    if (controlsNotifier.isDragProgress) {
-      controlsNotifier.isDragProgress = false;
-      videoViewController.seekTo(controlsNotifier.dragDuration);
+    if (videoViewValue.isDragProgress) {
+      videoViewController.setDragProgress(isDragProgress: false);
+      videoViewController.seekTo(videoViewValue.dragDuration);
     }
   }
 
@@ -310,17 +318,16 @@ class _ViewProgressIndicator extends StatelessWidget {
   const _ViewProgressIndicator({
     Key? key,
     required this.value,
-    required this.isDragLeft,
+    required this.verticalDragType,
     required this.color,
     required this.size,
-    this.height = 6,
   }) : super(key: key);
 
   /// If non-null, the value of this progress indicator.
   final double value;
 
   /// Is it volume or brightness.
-  final bool isDragLeft;
+  final VerticalDragType? verticalDragType;
 
   /// The color of the icon.
   final Color color;
@@ -329,14 +336,14 @@ class _ViewProgressIndicator extends StatelessWidget {
   final double size;
 
   /// The height of this progress indicator.
-  final double height;
+  static const double height = 6;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Icon(icon, size: size, color: color),
+        icon,
         const SizedBox(width: 5),
         ClipRRect(
           borderRadius: BorderRadius.circular(height),
@@ -356,14 +363,20 @@ class _ViewProgressIndicator extends StatelessWidget {
   }
 
   /// Icon
-  IconData get icon {
-    final List<IconData> list = isDragLeft ? brightnessIcons : volumeIcons;
+  Widget get icon {
+    if (verticalDragType == null) {
+      return const SizedBox.shrink();
+    }
+
+    final List<IconData> list = verticalDragType == VerticalDragType.brightness
+        ? brightnessIcons
+        : volumeIcons;
     if (value <= 0) {
-      return list[0];
+      return Icon(list[0], size: size, color: color);
     } else if (value < .5) {
-      return list[1];
+      return Icon(list[1], size: size, color: color);
     } else {
-      return list[2];
+      return Icon(list[2], size: size, color: color);
     }
   }
 
