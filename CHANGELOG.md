@@ -1,3 +1,10 @@
+## 1.1.0
+
+### Breaking changes
+
+* Use `VideoViewValue` instead of `VideoPlayerValue`, it will bring a better experience.
+* For error handling, the state before the error is retained and restored to the original state after successful playback.
+
 ## 1.0.1
 
 * Increase score.
