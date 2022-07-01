@@ -289,7 +289,7 @@ class VideoViewConfig {
   /// Defaults to TextPosition.ltl.
   final VideoTextPosition Function(bool isFullScreen)? textPosition;
 
-  /// Duration and interval width of progress bar.
+  /// The interval width of the progress bar and time information widget.
   final double Function(bool isFullScreen)? progressBarGap;
 
   /// The default colors used throughout the indicator.
