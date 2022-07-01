@@ -19,8 +19,8 @@ class _VideoPageState extends State<VideoPage> {
   @override
   Widget build(BuildContext context) {
     final String? url = ModalRoute.of(context)?.settings.arguments as String?;
-    final VideoViewController controller = VideoViewController.network(
-      url ?? '',
+    final VideoViewController controller = VideoViewController(
+      videoPlayerController: VideoPlayerController.network(url ?? ''),
       videoViewConfig: VideoViewConfig(
         height: 260,
         // aspectRatio: MediaQueryData.fromWindow(window).size.width / 260,
