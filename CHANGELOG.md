@@ -1,3 +1,8 @@
+## 1.1.2
+
+* No longer use the writing method of `VideoViewController.assets`, `VideoViewController.network`, `VideoViewController.file` and `VideoViewController.contentUri`.
+* Update README.md.
+
 ## 1.1.1
 
 * Adjust the safety zone of the controller.
