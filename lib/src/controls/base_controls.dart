@@ -21,7 +21,7 @@ abstract class BaseVideoViewControls<T extends StatefulWidget>
   Timer? hideTimer;
 
   /// Manipulate the default hide time of the widget.
-  final Duration defaultHideDuration = const Duration(milliseconds: 300);
+  final Duration defaultDuration = const Duration(milliseconds: 300);
 
   @override
   void didChangeDependencies() {

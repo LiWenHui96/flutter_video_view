@@ -52,6 +52,7 @@ class _ControlsCenterState extends BaseVideoViewControls<ControlsCenter> {
       isLock: videoViewValue.isLock,
       canShowLock: videoViewConfig.canShowLock,
       backgroundColor: videoViewConfig.tipBackgroundColor,
+      duration: defaultDuration,
       color: videoViewConfig.foregroundColor,
       onPressed: () {
         videoViewController.setLock(isLock: !videoViewValue.isLock);
@@ -87,6 +88,7 @@ class _AnimatedLockButton extends StatelessWidget {
     required this.isLock,
     required this.canShowLock,
     required this.backgroundColor,
+    required this.duration,
     this.color = Colors.white,
     this.onPressed,
   }) : super(key: key);
@@ -94,6 +96,7 @@ class _AnimatedLockButton extends StatelessWidget {
   final bool isLock;
   final bool canShowLock;
   final Color backgroundColor;
+  final Duration duration;
   final Color color;
   final VoidCallback? onPressed;
 
@@ -101,7 +104,7 @@ class _AnimatedLockButton extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget child = IconButton(
       icon: AnimatedCrossFade(
-        duration: const Duration(milliseconds: 300),
+        duration: duration,
         crossFadeState:
             isLock ? CrossFadeState.showFirst : CrossFadeState.showSecond,
         alignment: Alignment.center,

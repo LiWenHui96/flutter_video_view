@@ -22,36 +22,25 @@ class ControlsBottom extends StatefulWidget {
 }
 
 class _ControlsBottomState extends BaseVideoViewControls<ControlsBottom> {
+  double? _lastVolume;
+
   @override
   Widget build(BuildContext context) {
-    Widget child = Row(
-      children: <Widget>[
-        AnimatedPlayPause(
-          onPressed: playOrPause,
-          color: videoViewConfig.foregroundColor,
-          isPlaying: videoViewValue.isPlaying,
-        ),
-        Expanded(
-          child: SizedBox(height: 36, child: Row(children: _buildChildren())),
-        ),
-        _AnimatedFullscreen(
-          isFullscreen: videoViewValue.isFullScreen,
-          color: videoViewConfig.foregroundColor,
-          onPressed: () {
-            if (canUse) {
-              videoViewController.setFullScreen(
-                isFullScreen: !videoViewValue.isFullScreen,
-              );
-
-              Future<void>.delayed(
-                const Duration(milliseconds: 300),
-                () => showOrHide(visible: true),
-              );
-            }
-          },
-        ),
-      ],
-    );
+    Widget child = videoViewConfig.bottomBuilder?.call(
+          context,
+          videoViewValue.isFullScreen,
+          _buildPlayPauseButton(),
+          _buildProgressBar(),
+          _buildMuteButton(),
+          _buildFullScreenButton(),
+        ) ??
+        Row(
+          children: <Widget>[
+            _buildPlayPauseButton(),
+            Expanded(child: _buildProgressBar()),
+            _buildFullScreenButton(),
+          ],
+        );
 
     child = SafeArea(
       top: false,
@@ -70,6 +59,58 @@ class _ControlsBottomState extends BaseVideoViewControls<ControlsBottom> {
       ),
       child: child,
     );
+  }
+
+  Widget _buildPlayPauseButton() {
+    return AnimatedPlayPause(
+      onPressed: playOrPause,
+      duration: defaultDuration,
+      color: videoViewConfig.foregroundColor,
+      isPlaying: videoViewValue.isPlaying,
+    );
+  }
+
+  Widget _buildMuteButton() {
+    return _AnimatedMute(
+      isMute: videoViewValue.volume == 0,
+      duration: defaultDuration,
+      color: videoViewConfig.foregroundColor,
+      onPressed: () {
+        if (canUse) {
+          if (videoViewValue.volume == 0) {
+            videoViewController.setVolume(_lastVolume ?? .5);
+          } else {
+            _lastVolume = videoViewValue.volume;
+            videoViewController.setVolume(0);
+          }
+
+          showOrHide(visible: true);
+        }
+      },
+    );
+  }
+
+  Widget _buildFullScreenButton() {
+    return _AnimatedFullscreen(
+      isFullscreen: videoViewValue.isFullScreen,
+      duration: defaultDuration,
+      color: videoViewConfig.foregroundColor,
+      onPressed: () {
+        if (!canUse) {
+          return;
+        }
+
+        videoViewController.setFullScreen(
+          isFullScreen: !videoViewValue.isFullScreen,
+        );
+
+        Future<void>.delayed(defaultDuration, () => showOrHide(visible: true));
+      },
+    );
+  }
+
+  Widget _buildProgressBar() {
+    return Row(children: _buildChildren());
   }
 
   List<Widget> _buildChildren() {
@@ -101,7 +142,11 @@ class _ControlsBottomState extends BaseVideoViewControls<ControlsBottom> {
     }
   }
 
-  SizedBox get divider => const SizedBox(width: 10);
+  SizedBox get divider => SizedBox(
+        width:
+            videoViewConfig.progressBarGap?.call(videoViewValue.isFullScreen) ??
+                10,
+      );
 
   Widget _buildPosition() {
     return Text(formatDuration(videoViewValue.position), style: defaultStyle);
@@ -119,38 +164,38 @@ class _ControlsBottomState extends BaseVideoViewControls<ControlsBottom> {
   }
 
   Widget _buildProgress() {
-    return Expanded(
-      child: _VideoProgressBar(
-        colors: videoViewConfig.videoViewProgressColors,
-        value: videoViewValue,
-        onDragStart: (DragStartDetails details) {
-          if (canUse) {
-            videoViewController.setDragProgress(isDragProgress: true);
-          }
-        },
-        onDragUpdate: (double relative) {
-          if (canUse && videoViewValue.isDragProgress) {
-            showOrHide(visible: true, startTimer: false);
-            videoViewController
-                .setDragDuration(videoViewValue.duration * relative);
-          }
-        },
-        onDragEnd: (DragEndDetails details) {
-          if (videoViewValue.isDragProgress) {
-            videoViewController.setDragProgress(isDragProgress: false);
-            showOrHide(visible: true);
-            videoViewController.seekTo(videoViewValue.dragDuration);
-          }
-        },
-        onTapUp: (double relative) {
-          if (canUse) {
-            videoViewController
-                .setDragDuration(videoViewValue.duration * relative);
-            videoViewController.seekTo(videoViewValue.dragDuration);
-          }
-        },
-      ),
+    final Widget child = _VideoProgressBar(
+      colors: videoViewConfig.videoViewProgressColors,
+      value: videoViewValue,
+      onDragStart: (DragStartDetails details) {
+        if (canUse) {
+          videoViewController.setDragProgress(isDragProgress: true);
+        }
+      },
+      onDragUpdate: (double relative) {
+        if (canUse && videoViewValue.isDragProgress) {
+          showOrHide(visible: true, startTimer: false);
+          videoViewController
+              .setDragDuration(videoViewValue.duration * relative);
+        }
+      },
+      onDragEnd: (DragEndDetails details) {
+        if (videoViewValue.isDragProgress) {
+          videoViewController.setDragProgress(isDragProgress: false);
+          showOrHide(visible: true);
+          videoViewController.seekTo(videoViewValue.dragDuration);
+        }
+      },
+      onTapUp: (double relative) {
+        if (canUse) {
+          videoViewController
+              .setDragDuration(videoViewValue.duration * relative);
+          videoViewController.seekTo(videoViewValue.dragDuration);
+        }
+      },
     );
+
+    return Expanded(child: SizedBox(height: 24, child: child));
   }
 
   VideoTextPosition get textPosition =>
@@ -158,15 +203,48 @@ class _ControlsBottomState extends BaseVideoViewControls<ControlsBottom> {
       VideoTextPosition.ltl;
 }
 
+class _AnimatedMute extends StatelessWidget {
+  const _AnimatedMute({
+    Key? key,
+    required this.isMute,
+    required this.duration,
+    this.color = Colors.white,
+    this.onPressed,
+  }) : super(key: key);
+
+  final bool isMute;
+  final Duration duration;
+  final Color color;
+
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: AnimatedCrossFade(
+        duration: duration,
+        crossFadeState:
+            isMute ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+        alignment: Alignment.center,
+        firstChild: Icon(Icons.volume_off_rounded, color: color),
+        secondChild: Icon(Icons.volume_up_rounded, color: color),
+      ),
+      onPressed: onPressed,
+    );
+  }
+}
+
 class _AnimatedFullscreen extends StatelessWidget {
   const _AnimatedFullscreen({
     Key? key,
     required this.isFullscreen,
+    required this.duration,
     this.color = Colors.white,
     this.onPressed,
   }) : super(key: key);
 
   final bool isFullscreen;
+  final Duration duration;
   final Color color;
   final VoidCallback? onPressed;
 
@@ -174,7 +252,7 @@ class _AnimatedFullscreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       icon: AnimatedCrossFade(
-        duration: const Duration(milliseconds: 300),
+        duration: duration,
         crossFadeState:
             isFullscreen ? CrossFadeState.showFirst : CrossFadeState.showSecond,
         alignment: Alignment.center,

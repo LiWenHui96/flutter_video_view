@@ -46,7 +46,7 @@ class _VideoViewControlsState extends BaseVideoViewControls<VideoViewControls> {
       absorbing: !videoViewValue.isVisible,
       child: AnimatedOpacity(
         opacity: videoViewValue.isVisible ? 1.0 : .0,
-        duration: defaultHideDuration,
+        duration: defaultDuration,
         child: child,
       ),
     );
@@ -118,10 +118,7 @@ class _VideoViewControlsState extends BaseVideoViewControls<VideoViewControls> {
     }
 
     if (videoViewConfig.showControlsOnInitialize) {
-      Future<void>.delayed(
-        const Duration(milliseconds: 300),
-        () => showOrHide(visible: true),
-      );
+      Future<void>.delayed(defaultDuration, () => showOrHide(visible: true));
     }
   }
 

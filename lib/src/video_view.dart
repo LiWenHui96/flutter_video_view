@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -154,6 +153,7 @@ class _VideoViewState extends BaseState<VideoView> {
               padding: const EdgeInsets.all(4),
               child: AnimatedPlayPause(
                 isPlaying: false,
+                duration: const Duration(milliseconds: 300),
                 size: 24,
                 onPressed: _initialize,
               ),

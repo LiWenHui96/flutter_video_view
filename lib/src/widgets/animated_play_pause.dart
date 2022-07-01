@@ -12,6 +12,7 @@ class AnimatedPlayPause extends StatefulWidget {
   const AnimatedPlayPause({
     Key? key,
     required this.isPlaying,
+    required this.duration,
     this.size,
     this.color,
     this.onPressed,
@@ -19,6 +20,9 @@ class AnimatedPlayPause extends StatefulWidget {
 
   /// Whether it is playing.
   final bool isPlaying;
+
+  /// The length of time this animation should last.
+  final Duration duration;
 
   /// The size of [AnimatedIcon].
   final double? size;
@@ -41,7 +45,7 @@ class _AnimatedPlayPauseState extends BaseState<AnimatedPlayPause>
   late final AnimationController _animationController = AnimationController(
     vsync: this,
     value: widget.isPlaying ? 1 : 0,
-    duration: const Duration(milliseconds: 300),
+    duration: widget.duration,
   );
 
   @override

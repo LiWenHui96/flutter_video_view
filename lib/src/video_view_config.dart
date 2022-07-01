@@ -59,7 +59,9 @@ class VideoViewConfig {
     this.canShowLock = false,
     this.centerLeftActions,
     this.centerRightActions,
+    this.bottomBuilder,
     this.textPosition,
+    this.progressBarGap,
     this.videoViewProgressColors,
   })  : assert(
           maxScale > 0,
@@ -270,11 +272,25 @@ class VideoViewConfig {
     Widget lockButton,
   )? centerRightActions;
 
+  /// It is used to define the control buttons at the bottom and the layout of
+  /// the display content.
+  final Widget? Function(
+    BuildContext context,
+    bool isFullScreen,
+    Widget playPauseButton,
+    Widget progressBar,
+    Widget muteButton,
+    Widget fullScreenButton,
+  )? bottomBuilder;
+
   /// Enumeration value where the progress information is located on
   /// the progress bar.
   ///
   /// Defaults to TextPosition.ltl.
   final VideoTextPosition Function(bool isFullScreen)? textPosition;
+
+  /// Duration and interval width of progress bar.
+  final double Function(bool isFullScreen)? progressBarGap;
 
   /// The default colors used throughout the indicator.
   ///
