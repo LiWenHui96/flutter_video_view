@@ -1,3 +1,8 @@
+## 1.1.3
+
+* Add `bottomBuilder` to customize your bottom control bar.
+* Add `progressBarGap` to change the interval.
+
 ## 1.1.2
 
 * No longer use the writing method of `VideoViewController.assets`, `VideoViewController.network`, `VideoViewController.file` and `VideoViewController.contentUri`.
