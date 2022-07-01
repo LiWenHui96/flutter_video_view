@@ -5,6 +5,14 @@
 
 Language: [中文](README-ZH.md) | English
 
+`flutter_video_view` is a video player for flutter. The [video_player](https://pub.dev/packages/video_player) plugin gives low level access for the video playback.
+
+## Installation
+
+Please move to step [video_player](https://pub.dev/packages/video_player) for specific configuration.
+
+⚠️ PS: There is no need to add `video_player` dependency to the pubspec.yaml file.
+
 ## Preparing for use
 
 ### Version constraints
@@ -64,9 +72,11 @@ class MyApp extends StatelessWidget {
 ```dart
 import 'package:flutter_video_view/flutter_video_view.dart';
 
+final VideoPlayerController videoPlayerController = VideoPlayerController.xxx();
+
 final view = VideoView(
-  controller: VideoViewController.network(
-    'url',
+  controller: VideoViewController(
+    videoPlayerController: videoPlayerController,
     videoViewConfig: VideoViewConfig(),
   ),
 );

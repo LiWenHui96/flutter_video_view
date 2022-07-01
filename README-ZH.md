@@ -5,6 +5,14 @@
 
 Language: 中文 | [English](README.md)
 
+`flutter_video_view` 是一款用于 Flutter 的视频播放器。video_player 插件为视频播放提供了低级访问权限。
+
+## 安装
+
+具体的配置请移步 [video_player](https://pub.dev/packages/video_player)。
+
+⚠️ 注：无须在 pubspec.yaml 文件中添加 `video_player` 依赖项。
+
 ## 准备工作
 
 ### 版本限制
@@ -64,9 +72,11 @@ class MyApp extends StatelessWidget {
 ```dart
 import 'package:flutter_video_view/flutter_video_view.dart';
 
+final VideoPlayerController videoPlayerController = VideoPlayerController.xxx();
+
 final view = VideoView(
-  controller: VideoViewController.network(
-    'url',
+  controller: VideoViewController(
+    videoPlayerController: videoPlayerController,
     videoViewConfig: VideoViewConfig(),
   ),
 );
