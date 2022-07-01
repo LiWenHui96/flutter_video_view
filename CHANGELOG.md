@@ -1,3 +1,7 @@
+## 1.1.1
+
+* Adjust the safety zone of the controller.
+
 ## 1.1.0
 
 ### Breaking changes
