@@ -11,7 +11,7 @@ import 'video_view.dart';
 class VideoViewConfig {
   // ignore: public_member_api_docs
   VideoViewConfig({
-    this.width = double.infinity,
+    this.width,
     this.height,
     this.backgroundColor = Colors.black,
     this.tipBackgroundColor = Colors.black54,
@@ -45,7 +45,8 @@ class VideoViewConfig {
     this.showControls = true,
     this.hideControlsTimer = const Duration(seconds: 3),
     this.controlsBackgroundColor = const <Color>[
-      Color.fromRGBO(0, 0, 0, .6),
+      Color.fromRGBO(0, 0, 0, .7),
+      Color.fromRGBO(0, 0, 0, .3),
       Color.fromRGBO(0, 0, 0, 0),
     ],
     this.canLongPress = true,
@@ -75,7 +76,7 @@ class VideoViewConfig {
         );
 
   /// The width of video.
-  final double width;
+  final double? width;
 
   /// The height of video.
   final double? height;
@@ -279,71 +280,4 @@ class VideoViewConfig {
   ///
   /// See [VideoViewProgressColors] for default values.
   final VideoViewProgressColors? videoViewProgressColors;
-}
-
-/// Initialization status of video.
-enum VideoInitState {
-  /// Waiting for initialization.
-  none,
-
-  /// Initializing.
-  initializing,
-
-  /// Initialization successful.
-  success,
-
-  /// Initialization failed.
-  fail,
-}
-
-/// Position of text for video progress
-enum VideoTextPosition {
-  /// Are located on the left side of the progress bar.
-  ltl,
-
-  /// Are located on the right side of the progress bar.
-  rtr,
-
-  /// The current progress is to the left of the progress bar.
-  /// The total duration is on the right side of the progress bar.
-  ltr,
-
-  /// Do not display.
-  none,
-}
-
-/// Used to configure the VideoProgressBar widget's colors for how it
-/// describes the video's status.
-///
-/// The widget uses default colors that are customizeable through this class.
-class VideoViewProgressColors {
-  /// Any property can be set to any paint. They each have defaults.
-  VideoViewProgressColors({
-    this.backgroundColor = const Color.fromRGBO(255, 255, 255, .4),
-    this.playedColor = const Color.fromRGBO(255, 255, 255, 1),
-    this.bufferedColor = const Color.fromRGBO(255, 255, 255, .7),
-    this.handleColor = const Color.fromRGBO(255, 255, 255, 1),
-  }) : handleMoreColor = handleColor.withOpacity(.7);
-
-  /// [backgroundColor] defaults to white at 40% opacity. This is the background
-  /// color behind both [playedColor] and [bufferedColor] to denote the total
-  /// size of the video compared to either of those values.
-  final Color backgroundColor;
-
-  /// [playedColor] defaults to white. This fills up a portion of the
-  /// VideoProgressBar to represent how much of the video has played so far.
-  final Color playedColor;
-
-  /// [bufferedColor] defaults to white at 70% opacity. This fills up a portion
-  /// of VideoProgressBar to represent how much of the video has buffered so
-  /// far.
-  final Color bufferedColor;
-
-  /// [handleColor] defaults to white. To represent the playback position of
-  /// the current video.
-  final Color handleColor;
-
-  /// [handleMoreColor] defaults to white at 70% opacity. To represent the
-  /// playback position of the current video.
-  final Color handleMoreColor;
 }

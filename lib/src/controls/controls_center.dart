@@ -18,37 +18,39 @@ class ControlsCenter extends StatefulWidget {
 class _ControlsCenterState extends BaseVideoViewControls<ControlsCenter> {
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final Widget child = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        _actions(
+          videoViewConfig.centerLeftActions?.call(
+            context,
+            videoViewValue.isFullScreen,
+            videoViewValue.isLock,
+            _lockButton(),
+          ),
+        ),
+        const Spacer(),
+        _actions(
+          videoViewConfig.centerRightActions?.call(
+            context,
+            videoViewValue.isFullScreen,
+            videoViewValue.isLock,
+            _lockButton(),
+          ),
+        ),
+      ],
+    );
+
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          _actions(
-            videoViewConfig.centerLeftActions?.call(
-              context,
-              videoViewValue.isFullScreen,
-              videoViewValue.isLock,
-              _lockButton(),
-            ),
-          ),
-          const Spacer(),
-          _actions(
-            videoViewConfig.centerRightActions?.call(
-              context,
-              videoViewValue.isFullScreen,
-              videoViewValue.isLock,
-              _lockButton(),
-            ),
-          ),
-        ],
-      ),
+      child: SafeArea(top: false, bottom: false, child: child),
     );
   }
 
   _AnimatedLockButton _lockButton() {
     return _AnimatedLockButton(
       isLock: videoViewValue.isLock,
-      canShowLock: canShowLock,
+      canShowLock: videoViewConfig.canShowLock,
       backgroundColor: videoViewConfig.tipBackgroundColor,
       color: videoViewConfig.foregroundColor,
       onPressed: () {
@@ -77,8 +79,6 @@ class _ControlsCenterState extends BaseVideoViewControls<ControlsCenter> {
 
     return Column(mainAxisSize: MainAxisSize.min, children: children);
   }
-
-  bool get canShowLock => videoViewConfig.canShowLock;
 }
 
 class _AnimatedLockButton extends StatelessWidget {

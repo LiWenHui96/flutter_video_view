@@ -102,7 +102,7 @@ class _VideoViewState extends BaseState<VideoView> {
     return Container(
       padding: EdgeInsets.only(top: statusBarHeight),
       decoration: BoxDecoration(color: config.backgroundColor),
-      width: config.width,
+      width: config.width ?? MediaQuery.of(context).size.width,
       height: height < contextHeight ? height + statusBarHeight : contextHeight,
       child: _buildWidget(),
     );
@@ -111,41 +111,32 @@ class _VideoViewState extends BaseState<VideoView> {
   VideoViewControllerInherited _buildWidget() {
     final Widget child = ChangeNotifierProvider<VideoViewController>.value(
       value: controller,
-      child:
-          Consumer<VideoViewController>(builder: (_, __, ___) => _buildBody()),
+      child: Consumer<VideoViewController>(
+        builder: (_, __, ___) => Stack(
+          alignment: Alignment.center,
+          children: <Widget>[
+            if (value.videoInitState == VideoInitState.success)
+              InteractiveViewer(
+                maxScale: config.maxScale,
+                minScale: config.minScale,
+                panEnabled: config.panEnabled,
+                scaleEnabled: config.scaleEnabled,
+                child: AspectRatio(
+                  aspectRatio: value.aspectRatio,
+                  child: VideoPlayer(controller.videoPlayerController),
+                ),
+              ),
+            if (config.overlay != null) config.overlay!,
+            if (!value.isFinish && value.isBuffering)
+              config.bufferingPlaceholder ?? const CircularProgressIndicator(),
+            if (config.showControls) const VideoViewControls(),
+            _buildPlaceholderWidget(),
+          ],
+        ),
+      ),
     );
 
     return VideoViewControllerInherited(controller: controller, child: child);
-  }
-
-  Widget _buildBody() {
-    return Stack(
-      alignment: Alignment.center,
-      children: <Widget>[
-        if (value.videoInitState == VideoInitState.success)
-          InteractiveViewer(
-            maxScale: config.maxScale,
-            minScale: config.minScale,
-            panEnabled: config.panEnabled,
-            scaleEnabled: config.scaleEnabled,
-            child: AspectRatio(
-              aspectRatio: value.aspectRatio,
-              child: VideoPlayer(controller.videoPlayerController),
-            ),
-          ),
-        if (config.overlay != null) config.overlay!,
-        if (!value.isFinish && value.isBuffering)
-          config.bufferingPlaceholder ?? const CircularProgressIndicator(),
-        SafeArea(
-          top: value.isPortrait && value.isFullScreen,
-          bottom: value.isPortrait && value.isFullScreen,
-          child: config.showControls
-              ? const VideoViewControls()
-              : const SizedBox.shrink(),
-        ),
-        _buildPlaceholderWidget(),
-      ],
-    );
   }
 
   Widget _buildPlaceholderWidget() {
@@ -872,4 +863,87 @@ enum VerticalDragType {
   brightness,
   // ignore: public_member_api_docs
   volume,
+}
+
+/// Initialization status of video.
+enum VideoInitState {
+  /// Waiting for initialization.
+  none,
+
+  /// Initializing.
+  initializing,
+
+  /// Initialization successful.
+  success,
+
+  /// Initialization failed.
+  fail,
+}
+
+/// Position of text for video progress
+enum VideoTextPosition {
+  /// Are located on the left side of the progress bar.
+  ltl,
+
+  /// Are located on the right side of the progress bar.
+  rtr,
+
+  /// The current progress is to the left of the progress bar.
+  /// The total duration is on the right side of the progress bar.
+  ltr,
+
+  /// Do not display.
+  none,
+}
+
+/// Used to configure the VideoProgressBar widget's colors for how it
+/// describes the video's status.
+///
+/// The widget uses default colors that are customizeable through this class.
+class VideoViewProgressColors {
+  /// Any property can be set to any paint. They each have defaults.
+  VideoViewProgressColors({
+    this.backgroundColor = const Color.fromRGBO(255, 255, 255, .4),
+    this.playedColor = const Color.fromRGBO(255, 255, 255, 1),
+    this.bufferedColor = const Color.fromRGBO(255, 255, 255, .7),
+    this.handleColor = const Color.fromRGBO(255, 255, 255, 1),
+  }) : handleMoreColor = handleColor.withOpacity(.7);
+
+  /// [backgroundColor] defaults to white at 40% opacity. This is the background
+  /// color behind both [playedColor] and [bufferedColor] to denote the total
+  /// size of the video compared to either of those values.
+  final Color backgroundColor;
+
+  /// [playedColor] defaults to white. This fills up a portion of the
+  /// VideoProgressBar to represent how much of the video has played so far.
+  final Color playedColor;
+
+  /// [bufferedColor] defaults to white at 70% opacity. This fills up a portion
+  /// of VideoProgressBar to represent how much of the video has buffered so
+  /// far.
+  final Color bufferedColor;
+
+  /// [handleColor] defaults to white. To represent the playback position of
+  /// the current video.
+  final Color handleColor;
+
+  /// [handleMoreColor] defaults to white at 70% opacity. To represent the
+  /// playback position of the current video.
+  final Color handleMoreColor;
+}
+
+/// Calculate hours, minutes and seconds through Duration.
+String formatDuration(Duration position) {
+  final int ms = position.inMilliseconds;
+
+  int seconds = ms ~/ 1000;
+  final int hours = seconds ~/ 3600;
+  seconds = seconds % 3600;
+  final int minutes = seconds ~/ 60;
+  seconds = seconds % 60;
+
+  final String minutesString = minutes.toString().padLeft(2, '0');
+  final String secondsString = seconds.toString().padLeft(2, '0');
+
+  return '${hours == 0 ? '' : '$hours:'}$minutesString:$secondsString';
 }

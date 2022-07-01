@@ -20,9 +20,6 @@ abstract class BaseVideoViewControls<T extends StatefulWidget>
   /// Timer
   Timer? hideTimer;
 
-  /// The height of the action bar.
-  final double barHeight = 48;
-
   /// Manipulate the default hide time of the widget.
   final Duration defaultHideDuration = const Duration(milliseconds: 300);
 
@@ -141,6 +138,12 @@ abstract class BaseVideoViewControls<T extends StatefulWidget>
       videoViewValue.isInitialized &&
       videoViewValue.videoInitState == VideoInitState.success;
 
+  /// The style of all text.
+  TextStyle get defaultStyle => TextStyle(
+        fontSize: videoViewConfig.defaultTextSize,
+        color: videoViewConfig.foregroundColor,
+      );
+
   // ignore: public_member_api_docs
   VideoViewController get videoViewController => _videoViewController!;
 
@@ -149,20 +152,4 @@ abstract class BaseVideoViewControls<T extends StatefulWidget>
 
   // ignore: public_member_api_docs
   VideoViewConfig get videoViewConfig => _videoViewConfig;
-}
-
-/// Calculate hours, minutes and seconds through Duration.
-String formatDuration(Duration position) {
-  final int ms = position.inMilliseconds;
-
-  int seconds = ms ~/ 1000;
-  final int hours = seconds ~/ 3600;
-  seconds = seconds % 3600;
-  final int minutes = seconds ~/ 60;
-  seconds = seconds % 60;
-
-  final String minutesString = minutes.toString().padLeft(2, '0');
-  final String secondsString = seconds.toString().padLeft(2, '0');
-
-  return '${hours == 0 ? '' : '$hours:'}$minutesString:$secondsString';
 }

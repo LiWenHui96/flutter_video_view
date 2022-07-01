@@ -71,32 +71,36 @@ class _VideoViewControlsState extends BaseVideoViewControls<VideoViewControls> {
               ?.call(context, videoViewValue.isFullScreen) ??
           Container(
             color: videoViewConfig.tipBackgroundColor,
-            child: Stack(
-              children: <Widget>[
-                if (Navigator.canPop(context))
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios),
-                    color: foregroundColor,
-                    tooltip:
-                        MaterialLocalizations.of(context).backButtonTooltip,
-                    onPressed: () async => Navigator.maybePop(context),
-                  ),
-                Center(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(.9),
-                      shape: BoxShape.circle,
+            child: SafeArea(
+              top: videoViewValue.isPortrait && videoViewValue.isFullScreen,
+              bottom: false,
+              child: Stack(
+                children: <Widget>[
+                  if (Navigator.canPop(context))
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back_ios),
+                      color: foregroundColor,
+                      tooltip:
+                          MaterialLocalizations.of(context).backButtonTooltip,
+                      onPressed: () async => Navigator.maybePop(context),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: IconButton(
-                        onPressed: playOrPause,
-                        icon: const Icon(Icons.refresh_rounded),
+                  Center(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(.9),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: IconButton(
+                          onPressed: playOrPause,
+                          icon: const Icon(Icons.refresh_rounded),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
     }
@@ -126,7 +130,7 @@ class _VideoViewControlsState extends BaseVideoViewControls<VideoViewControls> {
     if (videoViewValue.isMaxSpeed) {
       child = _MaxSpeedPlay(
         size: videoViewConfig.defaultIconSize,
-        color: foregroundColor,
+        style: defaultStyle,
       );
     }
     if (videoViewValue.isVerticalDrag) {
@@ -140,10 +144,7 @@ class _VideoViewControlsState extends BaseVideoViewControls<VideoViewControls> {
     if (videoViewValue.isDragProgress) {
       child = Text(
         '${formatDuration(videoViewValue.dragDuration)} / ${formatDuration(videoViewValue.duration)}',
-        style: TextStyle(
-          fontSize: videoViewConfig.defaultTextSize,
-          color: foregroundColor,
-        ),
+        style: defaultStyle,
       );
     }
     return super.tipWidget(child: child);
@@ -243,14 +244,14 @@ class _VideoViewControlsState extends BaseVideoViewControls<VideoViewControls> {
 
 class _MaxSpeedPlay extends StatefulWidget {
   // ignore: public_member_api_docs
-  const _MaxSpeedPlay({Key? key, required this.size, required this.color})
+  const _MaxSpeedPlay({Key? key, required this.size, required this.style})
       : super(key: key);
 
   /// The size of the icon.
   final double size;
 
   /// The color of the icon.
-  final Color color;
+  final TextStyle style;
 
   @override
   State<_MaxSpeedPlay> createState() => _MaxSpeedPlayState();
@@ -294,7 +295,7 @@ class _MaxSpeedPlayState extends BaseState<_MaxSpeedPlay>
         setIcon(nowValue + 1),
         setIcon(nowValue),
         const SizedBox(width: 5),
-        Text(local.speedPlay, style: TextStyle(color: widget.color)),
+        Text(local.speedPlay, style: widget.style),
       ],
     );
   }

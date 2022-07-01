@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_video_view/src/video_view.dart';
-import 'package:flutter_video_view/src/video_view_config.dart';
 import 'package:flutter_video_view/src/widgets/animated_play_pause.dart';
 import 'package:flutter_video_view/src/widgets/base_state.dart';
 import 'package:video_player/video_player.dart';
@@ -25,14 +24,16 @@ class ControlsBottom extends StatefulWidget {
 class _ControlsBottomState extends BaseVideoViewControls<ControlsBottom> {
   @override
   Widget build(BuildContext context) {
-    final Widget child = Row(
+    Widget child = Row(
       children: <Widget>[
         AnimatedPlayPause(
           onPressed: playOrPause,
           color: videoViewConfig.foregroundColor,
           isPlaying: videoViewValue.isPlaying,
         ),
-        Expanded(child: Row(children: _buildChildren())),
+        Expanded(
+          child: SizedBox(height: 36, child: Row(children: _buildChildren())),
+        ),
         _AnimatedFullscreen(
           isFullscreen: videoViewValue.isFullScreen,
           color: videoViewConfig.foregroundColor,
@@ -52,8 +53,14 @@ class _ControlsBottomState extends BaseVideoViewControls<ControlsBottom> {
       ],
     );
 
+    child = SafeArea(
+      top: false,
+      bottom: videoViewValue.isPortrait && videoViewValue.isFullScreen,
+      child: child,
+    );
+
     return Container(
-      height: barHeight,
+      padding: const EdgeInsets.only(top: 5),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.bottomCenter,
@@ -145,11 +152,6 @@ class _ControlsBottomState extends BaseVideoViewControls<ControlsBottom> {
       ),
     );
   }
-
-  TextStyle get defaultStyle => TextStyle(
-        fontSize: videoViewConfig.defaultTextSize,
-        color: videoViewConfig.foregroundColor,
-      );
 
   VideoTextPosition get textPosition =>
       videoViewConfig.textPosition?.call(videoViewValue.isFullScreen) ??

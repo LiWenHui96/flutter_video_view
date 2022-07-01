@@ -29,7 +29,8 @@ class _ControlsTopState extends BaseVideoViewControls<ControlsTop> {
         if (Navigator.canPop(context))
           IconButton(
             icon: const Icon(Icons.arrow_back_ios),
-            color: foregroundColor,
+            color: videoViewConfig.foregroundColor,
+            iconSize: videoViewConfig.defaultIconSize,
             tooltip: MaterialLocalizations.of(context).backButtonTooltip,
             onPressed: () async => Navigator.maybePop(context),
           ),
@@ -40,11 +41,7 @@ class _ControlsTopState extends BaseVideoViewControls<ControlsTop> {
               ? _AnimatedText(
                   child: Text(
                     videoViewConfig.title!,
-                    style: videoViewConfig.titleTextStyle ??
-                        TextStyle(
-                          color: foregroundColor,
-                          fontSize: videoViewConfig.defaultTextSize,
-                        ),
+                    style: videoViewConfig.titleTextStyle ?? defaultStyle,
                     maxLines: 1,
                   ),
                 )
@@ -61,17 +58,20 @@ class _ControlsTopState extends BaseVideoViewControls<ControlsTop> {
     if (isShowDevice) {
       child = Column(
         children: <Widget>[
-          _DeviceInfoRow(
-            height: deviceRowHeight,
-            foregroundColor: foregroundColor,
-          ),
-          SizedBox(height: barHeight, child: child),
+          _DeviceInfoRow(foregroundColor: videoViewConfig.foregroundColor),
+          child,
         ],
       );
     }
 
+    child = SafeArea(
+      top: videoViewValue.isPortrait && videoViewValue.isFullScreen,
+      bottom: false,
+      child: child,
+    );
+
     return Container(
-      height: barHeight + deviceRowHeight,
+      padding: const EdgeInsets.only(bottom: 5),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -83,14 +83,10 @@ class _ControlsTopState extends BaseVideoViewControls<ControlsTop> {
     );
   }
 
-  double get deviceRowHeight => isShowDevice ? 20 : 0;
-
   bool get isShowDevice =>
       videoViewConfig.canShowDevice &&
       videoViewValue.isFullScreen &&
       !videoViewValue.isPortrait;
-
-  Color get foregroundColor => videoViewConfig.foregroundColor;
 }
 
 class _AnimatedText extends StatefulWidget {
@@ -156,13 +152,9 @@ class _AnimatedTextState extends BaseState<_AnimatedText> {
 }
 
 class _DeviceInfoRow extends StatefulWidget {
-  const _DeviceInfoRow({
-    Key? key,
-    this.height = 20,
-    this.foregroundColor = Colors.white,
-  }) : super(key: key);
+  const _DeviceInfoRow({Key? key, required this.foregroundColor})
+      : super(key: key);
 
-  final double height;
   final Color foregroundColor;
 
   @override
@@ -313,5 +305,5 @@ class _DeviceInfoRowState extends BaseState<_DeviceInfoRow> {
 
   Color get foregroundColor => widget.foregroundColor;
 
-  double get height => widget.height;
+  double get height => 20;
 }
