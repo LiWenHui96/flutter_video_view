@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_video_view/src/local/video_view_localizations.dart';
 import 'package:flutter_video_view/src/utils/util_brightness.dart';
 import 'package:flutter_video_view/src/utils/util_volume.dart';
 import 'package:flutter_video_view/src/video_view.dart';
+import 'package:flutter_video_view/src/video_view_localizations.dart';
 import 'package:flutter_video_view/src/widgets/base_state.dart';
 
 import 'base_controls.dart';
@@ -308,7 +308,7 @@ class _MaxSpeedPlayState extends BaseState<_MaxSpeedPlay>
     return Icon(Icons.play_arrow_rounded, size: widget.size, color: color);
   }
 
-  VideoViewLocalizations get local => VideoViewLocalizations.of(context);
+  VideoLocalizations get local => VideoLocalizations.of(context);
 }
 
 class _ViewProgressIndicator extends StatelessWidget {

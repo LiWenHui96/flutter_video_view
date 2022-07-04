@@ -9,10 +9,10 @@ import 'package:video_player/video_player.dart';
 import 'package:wakelock/wakelock.dart';
 
 import 'controls/video_view_controls.dart';
-import 'local/video_view_localizations.dart';
 import 'utils/util_brightness.dart';
 import 'utils/util_event.dart';
 import 'video_view_config.dart';
+import 'video_view_localizations.dart';
 import 'widgets/animated_play_pause.dart';
 import 'widgets/base_state.dart';
 
@@ -190,7 +190,7 @@ class _VideoViewState extends BaseState<VideoView> {
         color: config.foregroundColor,
       );
 
-  VideoViewLocalizations get local => VideoViewLocalizations.of(context);
+  VideoLocalizations get local => VideoLocalizations.of(context);
 
   VideoViewValue get value => controller.value;
 

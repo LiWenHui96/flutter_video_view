@@ -1,14 +1,36 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-/// @Describe: Localizations
+/// @Describe: LocalizationsDelegate
 ///
 /// @Author: LiWeNHuI
-/// @Date: 2022/6/16
+/// @Date: 2022/6/22
 
-abstract class VideoViewLocalizationsBase {
+class VideoViewLocalizations extends LocalizationsDelegate<VideoLocalizations> {
   // ignore: public_member_api_docs
-  const VideoViewLocalizationsBase(this.locale);
+  const VideoViewLocalizations();
+
+  /// Provided to [MaterialApp] for use.
+  static const VideoViewLocalizations delegate = VideoViewLocalizations();
+
+  @override
+  bool isSupported(Locale locale) =>
+      VideoLocalizations.languages.contains(locale.languageCode);
+
+  @override
+  Future<VideoLocalizations> load(Locale locale) {
+    return SynchronousFuture<VideoLocalizations>(VideoLocalizations(locale));
+  }
+
+  @override
+  bool shouldReload(VideoViewLocalizations old) => false;
+}
+
+/// Localizations
+abstract class LocalizationsBase {
+  // ignore: public_member_api_docs
+  const LocalizationsBase(this.locale);
 
   // ignore: public_member_api_docs
   final Locale? locale;
@@ -45,11 +67,11 @@ abstract class VideoViewLocalizationsBase {
 }
 
 /// localizations
-class VideoViewLocalizations extends VideoViewLocalizationsBase {
+class VideoLocalizations extends LocalizationsBase {
   // ignore: public_member_api_docs
-  const VideoViewLocalizations(Locale? locale) : super(locale);
+  const VideoLocalizations(Locale? locale) : super(locale);
 
-  static const VideoViewLocalizations _static = VideoViewLocalizations(null);
+  static const VideoLocalizations _static = VideoLocalizations(null);
 
   @override
   Object? getItem(String key) {
@@ -64,11 +86,8 @@ class VideoViewLocalizations extends VideoViewLocalizationsBase {
   }
 
   /// Internally available
-  static VideoViewLocalizations of(BuildContext context) {
-    return Localizations.of<VideoViewLocalizations>(
-          context,
-          VideoViewLocalizations,
-        ) ??
+  static VideoLocalizations of(BuildContext context) {
+    return Localizations.of<VideoLocalizations>(context, VideoLocalizations) ??
         _static;
   }
 

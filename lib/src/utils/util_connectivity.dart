@@ -1,5 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter_video_view/src/local/video_view_localizations.dart';
+import 'package:flutter_video_view/src/video_view_localizations.dart';
 
 /// @Describe: Connectivity
 ///
@@ -25,7 +25,7 @@ class ConnectivityUtil {
       _singleton._connectivity.checkConnectivity();
 
   /// Gets a description of the current connectivity.
-  static Future<String> getDescription(VideoViewLocalizations local) async {
+  static Future<String> getDescription(VideoLocalizations local) async {
     final ConnectivityResult result = await current;
     switch (result) {
       case ConnectivityResult.bluetooth:

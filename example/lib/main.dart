@@ -30,7 +30,7 @@ class _MyAppState extends State<MyApp> {
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
-        VideoViewLocalizationsDelegate.delegate,
+        VideoViewLocalizations.delegate,
       ],
       supportedLocales: const <Locale>[Locale('en', 'US'), Locale('zh', 'CN')],
       debugShowCheckedModeBanner: false,

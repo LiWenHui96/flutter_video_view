@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_video_view/src/local/video_view_localizations.dart';
 import 'package:flutter_video_view/src/utils/util_battery.dart';
 import 'package:flutter_video_view/src/utils/util_connectivity.dart';
+import 'package:flutter_video_view/src/video_view_localizations.dart';
 import 'package:flutter_video_view/src/widgets/base_state.dart';
 
 import 'base_controls.dart';
@@ -301,7 +301,7 @@ class _DeviceInfoRowState extends BaseState<_DeviceInfoRow> {
     setState(() {});
   }
 
-  VideoViewLocalizations get local => VideoViewLocalizations.of(context);
+  VideoLocalizations get local => VideoLocalizations.of(context);
 
   Color get foregroundColor => widget.foregroundColor;
 
