@@ -237,21 +237,20 @@ class VideoViewController extends ValueNotifier<VideoViewValue> {
   bool _beforeEnableWakelock = false;
 
   Future<void> _initialize() async {
+    unawaited(setLooping(looping: config.looping));
+    unawaited(setVolume(config.volume));
+
     if ((config.autoInitialize || config.autoPlay) && !value.isInitialized) {
-      value = value.copyWith(videoInitState: VideoInitState.initializing);
+      await initialize();
     }
 
-    await setLooping(looping: config.looping);
-    await setVolume(config.volume);
-    await seekTo(config.startAt);
+    if (value.videoInitState == VideoInitState.success) {
+      await seekTo(config.startAt);
+    }
 
     _beforeEnableWakelock = await Wakelock.enabled;
     if (config.allowedScreenSleep && !_beforeEnableWakelock) {
       await Wakelock.enable();
-    }
-
-    if ((config.autoInitialize || config.autoPlay) && !value.isInitialized) {
-      await initialize();
     }
 
     if (config.fullScreenByDefault) {
@@ -261,6 +260,8 @@ class VideoViewController extends ValueNotifier<VideoViewValue> {
 
   /// Initialize the controller.
   Future<void> initialize() async {
+    value = value.copyWith(videoInitState: VideoInitState.initializing);
+
     /// This is the process of video initialization to obtain the relevant
     /// status.
     try {
@@ -363,7 +364,11 @@ class VideoViewController extends ValueNotifier<VideoViewValue> {
   }
 
   /// Sets the video's current timestamp to be at [moment].
-  Future<void> seekTo(Duration moment) async {
+  Future<void> seekTo(Duration? moment) async {
+    if (moment == null) {
+      return;
+    }
+
     await videoPlayerController.seekTo(moment);
     if (_isDisposed) {
       return;

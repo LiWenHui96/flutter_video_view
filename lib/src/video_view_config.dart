@@ -27,7 +27,7 @@ class VideoViewConfig {
     this.allowedScreenSleep = true,
     this.autoInitialize = false,
     this.autoPlay = false,
-    this.startAt = Duration.zero,
+    this.startAt,
     this.volume = 1.0,
     this.looping = false,
     this.overlay,
@@ -155,7 +155,7 @@ class VideoViewConfig {
   /// Where does the video start playing when it first plays.
   ///
   /// Defaults to zero.
-  final Duration startAt;
+  final Duration? startAt;
 
   /// The volume of the video, not the device volume.
   final double volume;
