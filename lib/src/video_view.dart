@@ -237,6 +237,10 @@ class VideoViewController extends ValueNotifier<VideoViewValue> {
   bool _beforeEnableWakelock = false;
 
   Future<void> _initialize() async {
+    if ((config.autoInitialize || config.autoPlay) && !value.isInitialized) {
+      value = value.copyWith(videoInitState: VideoInitState.initializing);
+    }
+
     await setLooping(looping: config.looping);
     await setVolume(config.volume);
     await seekTo(config.startAt);
@@ -257,8 +261,6 @@ class VideoViewController extends ValueNotifier<VideoViewValue> {
 
   /// Initialize the controller.
   Future<void> initialize() async {
-    value = value.copyWith(videoInitState: VideoInitState.initializing);
-
     /// This is the process of video initialization to obtain the relevant
     /// status.
     try {
