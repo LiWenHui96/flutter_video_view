@@ -1,4 +1,12 @@
+## 1.1.5
+
+* Optimize the initialization process.
+* Add `showBuffering` to show placeholders in the buffer.
+* Replace only the initial state modification. When `autoInitialize` or `autoPlay` is true, change the initialization status to loading.
+
 ## 1.1.4
+
+### Retracted
 
 * Replace only the initial state modification. When `autoInitialize` or `autoPlay` is true, change the initialization status to loading.
 
