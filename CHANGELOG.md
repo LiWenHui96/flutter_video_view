@@ -1,3 +1,7 @@
+## 1.1.4
+
+* Replace only the initial state modification. When `autoInitialize` or `autoPlay` is true, change the initialization status to loading.
+
 ## 1.1.3
 
 * Add `bottomBuilder` to customize your bottom control bar.
