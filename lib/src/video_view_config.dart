@@ -32,6 +32,7 @@ class VideoViewConfig {
     this.looping = false,
     this.overlay,
     this.placeholderBuilder,
+    this.showBuffering = true,
     this.bufferingPlaceholder,
     this.finishBuilder,
     this.fullScreenByDefault = false,
@@ -170,6 +171,11 @@ class VideoViewConfig {
 
   /// Widgets in various initialized states.
   final Map<VideoInitState, Widget>? placeholderBuilder;
+
+  /// Whether to show placeholders in the buffer.
+  ///
+  /// Defaults to true.
+  final bool showBuffering;
 
   /// The placeholder when buffered is displayed above the video.
   final Widget? bufferingPlaceholder;
