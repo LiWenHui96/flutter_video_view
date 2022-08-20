@@ -1,3 +1,8 @@
+## 1.1.6
+
+* Add `showTopControl` to control the concealment of the top controller.
+* Optimization.
+
 ## 1.1.5
 
 * Optimize the initialization process.
