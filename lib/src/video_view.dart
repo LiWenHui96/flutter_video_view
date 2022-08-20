@@ -41,11 +41,11 @@ class _VideoViewState extends BaseState<VideoView> {
       if (isFullScreen) {
         await _pushToFullScreen();
       } else {
+        await controller.exitFullScreen();
         if (!mounted) {
           return;
         }
         Navigator.of(context, rootNavigator: config.useRootNavigator).pop();
-        await controller.exitFullScreen();
       }
     });
 
@@ -54,8 +54,6 @@ class _VideoViewState extends BaseState<VideoView> {
 
   @override
   void dispose() {
-    controller.dispose();
-
     /// Reset screen brightness.
     ScreenBrightnessUtil.resetScreenBrightness();
 
@@ -69,7 +67,7 @@ class _VideoViewState extends BaseState<VideoView> {
         Animation<double> animation,
         Animation<double> secondaryAnimation,
       ) {
-        final VideoViewControllerInherited child = _buildWidget();
+        final VideoViewControllerInherited child = _buildWidget(0);
 
         return AnimatedBuilder(
           animation: animation,
@@ -99,15 +97,14 @@ class _VideoViewState extends BaseState<VideoView> {
         config.canUseSafe ? MediaQueryData.fromWindow(window).padding.top : 0;
 
     return Container(
-      padding: EdgeInsets.only(top: statusBarHeight),
       decoration: BoxDecoration(color: config.backgroundColor),
       width: config.width ?? MediaQuery.of(context).size.width,
       height: height < contextHeight ? height + statusBarHeight : contextHeight,
-      child: _buildWidget(),
+      child: _buildWidget(statusBarHeight),
     );
   }
 
-  VideoViewControllerInherited _buildWidget() {
+  VideoViewControllerInherited _buildWidget(double statusBarHeight) {
     final Widget child = ChangeNotifierProvider<VideoViewController>.value(
       value: controller,
       child: Consumer<VideoViewController>(
@@ -115,14 +112,17 @@ class _VideoViewState extends BaseState<VideoView> {
           alignment: Alignment.center,
           children: <Widget>[
             if (value.videoInitState == VideoInitState.success)
-              InteractiveViewer(
-                maxScale: config.maxScale,
-                minScale: config.minScale,
-                panEnabled: config.panEnabled,
-                scaleEnabled: config.scaleEnabled,
-                child: AspectRatio(
-                  aspectRatio: value.aspectRatio,
-                  child: VideoPlayer(controller.videoPlayerController),
+              Padding(
+                padding: EdgeInsets.only(top: statusBarHeight),
+                child: InteractiveViewer(
+                  maxScale: config.maxScale,
+                  minScale: config.minScale,
+                  panEnabled: config.panEnabled,
+                  scaleEnabled: config.scaleEnabled,
+                  child: AspectRatio(
+                    aspectRatio: value.aspectRatio,
+                    child: VideoPlayer(controller.videoPlayerController),
+                  ),
                 ),
               ),
             if (config.overlay != null) config.overlay!,
