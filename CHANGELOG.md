@@ -1,3 +1,7 @@
+## 1.1.6+2
+
+* Horizontal and vertical screen transitions no longer use asynchronous methods.
+
 ## 1.1.6+1
 
 * Fixed known problems.
