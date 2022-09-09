@@ -41,7 +41,7 @@ class _VideoViewState extends BaseState<VideoView> {
       if (isFullScreen) {
         await _pushToFullScreen();
       } else {
-        await controller.exitFullScreen();
+        controller.exitFullScreen();
         if (!mounted) {
           return;
         }
@@ -80,13 +80,13 @@ class _VideoViewState extends BaseState<VideoView> {
       },
     );
 
-    await controller.enterFullScreen();
+    controller.enterFullScreen();
     if (!mounted) {
       return;
     }
     await Navigator.of(context, rootNavigator: config.useRootNavigator)
         .push(route);
-    await controller.exitFullScreen();
+    controller.exitFullScreen();
   }
 
   @override
@@ -485,24 +485,24 @@ class VideoViewController extends ValueNotifier<VideoViewValue> {
 
   /// Enter full-screen mode.
   @protected
-  Future<void> enterFullScreen() async {
-    await SystemChrome.setEnabledSystemUIMode(
+  void enterFullScreen() {
+    SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,
       overlays: config.systemOverlaysEnterFullScreen ?? <SystemUiOverlay>[],
     );
-    await SystemChrome.setPreferredOrientations(value.orientations);
+    SystemChrome.setPreferredOrientations(value.orientations);
   }
 
   /// Exit full-screen mode.
   @protected
-  Future<void> exitFullScreen() async {
+  void exitFullScreen() {
     setFullScreen(isFullScreen: false, isFire: false);
     setLock(isLock: false);
-    await SystemChrome.setEnabledSystemUIMode(
+    SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,
       overlays: config.systemOverlaysExitFullScreen,
     );
-    await SystemChrome.setPreferredOrientations(
+    SystemChrome.setPreferredOrientations(
       config.deviceOrientationsExitFullScreen,
     );
   }
