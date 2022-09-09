@@ -67,7 +67,7 @@ class _VideoViewState extends BaseState<VideoView> {
         Animation<double> animation,
         Animation<double> secondaryAnimation,
       ) {
-        final VideoViewControllerInherited child = _buildWidget(0);
+        final VideoViewControllerInherited child = _buildWidget();
 
         return AnimatedBuilder(
           animation: animation,
@@ -97,14 +97,15 @@ class _VideoViewState extends BaseState<VideoView> {
         config.canUseSafe ? MediaQueryData.fromWindow(window).padding.top : 0;
 
     return Container(
+      padding: EdgeInsets.only(top: statusBarHeight),
       decoration: BoxDecoration(color: config.backgroundColor),
       width: config.width ?? MediaQuery.of(context).size.width,
       height: height < contextHeight ? height + statusBarHeight : contextHeight,
-      child: _buildWidget(statusBarHeight),
+      child: _buildWidget(),
     );
   }
 
-  VideoViewControllerInherited _buildWidget(double statusBarHeight) {
+  VideoViewControllerInherited _buildWidget() {
     final Widget child = ChangeNotifierProvider<VideoViewController>.value(
       value: controller,
       child: Consumer<VideoViewController>(
@@ -112,17 +113,14 @@ class _VideoViewState extends BaseState<VideoView> {
           alignment: Alignment.center,
           children: <Widget>[
             if (value.videoInitState == VideoInitState.success)
-              Padding(
-                padding: EdgeInsets.only(top: statusBarHeight),
-                child: InteractiveViewer(
-                  maxScale: config.maxScale,
-                  minScale: config.minScale,
-                  panEnabled: config.panEnabled,
-                  scaleEnabled: config.scaleEnabled,
-                  child: AspectRatio(
-                    aspectRatio: value.aspectRatio,
-                    child: VideoPlayer(controller.videoPlayerController),
-                  ),
+              InteractiveViewer(
+                maxScale: config.maxScale,
+                minScale: config.minScale,
+                panEnabled: config.panEnabled,
+                scaleEnabled: config.scaleEnabled,
+                child: AspectRatio(
+                  aspectRatio: value.aspectRatio,
+                  child: VideoPlayer(controller.videoPlayerController),
                 ),
               ),
             if (config.overlay != null) config.overlay!,
