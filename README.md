@@ -5,7 +5,8 @@
 
 Language: [中文](README-ZH.md) | English
 
-`flutter_video_view` is a video player for flutter. The [video_player](https://pub.dev/packages/video_player) plugin gives low level access for the video playback.
+`flutter_video_view` is a video player for flutter. The [video_player](https://pub.dev/packages/video_player) plugin
+gives low level access for the video playback.
 
 ## Installation
 
@@ -56,12 +57,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      ...
-      localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
-        ...
-        VideoViewLocalizationsDelegate.delegate,
-      ],
-      ...
+    ...
+    localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+    ...
+    VideoViewLocalizationsDelegate.delegate,
+    ],
+    ...
     );
   }
 }
@@ -118,8 +119,7 @@ Popups are implemented by using [VideoViewConfig](lib/src/video_view_config.dart
 | systemOverlaysExitFullScreen      | `List<SystemUiOverlay>`                                                                                                                              | Defines the system overlays visible after exiting fullscreen                                                             | `SystemUiOverlay.values`                                                                      |
 | deviceOrientationsExitFullScreen  | `List<DeviceOrientation>`                                                                                                                            | Defines the set of allowed device orientations after exiting fullscreen                                                  | `DeviceOrientation.values`                                                                    |
 | showControlsOnInitialize          | `bool`                                                                                                                                               | Whether controls are displayed when initializing the widget                                                              | `true`                                                                                        |
-| showControls                      | `bool`                                                                                                                                               | Whether to display controls                                                                                              | `true`                                                                                        |
-| showTopControl                    | `bool Function(bool isFullScreen)?`                                                                                                                  | Whether to display the controls at the top                                                                               | `true`                                                                                        |
+| showControls                      | `bool Function(bool isFullScreen)?`                                                                                                                  | Whether to display controls                                                                                              | `true`                                                                                        |
 | hideControlsTimer                 | `Duration`                                                                                                                                           | Defines the [Duration] before the video controls are hidden                                                              | `Duration(seconds: 3)`                                                                        |
 | controlsBackgroundColor           | `List<Color>`                                                                                                                                        | The background color of the controller                                                                                   | <Color>[Color.fromRGBO(0, 0, 0, .7), Color.fromRGBO(0, 0, 0, .3), Color.fromRGBO(0, 0, 0, 0)] |
 | canLongPress                      | `bool`                                                                                                                                               | Whether the video can be played at double speed by long pressing                                                         | `true`                                                                                        |
@@ -137,4 +137,5 @@ Popups are implemented by using [VideoViewConfig](lib/src/video_view_config.dart
 | progressBarGap                    | `double Function(bool isFullScreen)?`                                                                                                                | The interval width of the progress bar and time information widget.                                                      | `10`                                                                                          |
 | videoViewProgressColors           | `VideoViewProgressColors?`                                                                                                                           | The default colors used throughout the indicator                                                                         | `null`                                                                                        |
 
-> If you like my project, please in the upper right corner of the project "Star". Your support is my biggest encouragement! ^_^
+> If you like my project, please in the upper right corner of the project "Star". Your support is my biggest
+> encouragement! ^_^
