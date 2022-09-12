@@ -1,3 +1,8 @@
+## 1.1.6+3
+
+* Modify the usage of `showControl`.
+* Delete `showTopControl`.
+
 ## 1.1.6+2
 
 * Horizontal and vertical screen transitions no longer use asynchronous methods.
