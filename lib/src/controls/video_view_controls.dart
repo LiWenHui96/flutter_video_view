@@ -33,13 +33,7 @@ class _VideoViewControlsState extends BaseVideoViewControls<VideoViewControls> {
       children: <Widget>[
         Column(
           children: <Widget>[
-            if (!videoViewValue.isLock)
-              Offstage(
-                offstage: !(videoViewConfig.showTopControl
-                        ?.call(videoViewValue.isFullScreen) ??
-                    true),
-                child: const ControlsTop(),
-              ),
+            if (!videoViewValue.isLock) const ControlsTop(),
             const Spacer(),
             if (!videoViewValue.isLock) const ControlsBottom(),
           ],

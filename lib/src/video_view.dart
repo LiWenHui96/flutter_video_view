@@ -74,7 +74,7 @@ class _VideoViewState extends BaseState<VideoView> {
           builder: (_, __) => Scaffold(
             resizeToAvoidBottomInset: false,
             backgroundColor: config.backgroundColor,
-            body: child,
+            body: Center(child: child),
           ),
         );
       },
@@ -126,7 +126,8 @@ class _VideoViewState extends BaseState<VideoView> {
             if (config.overlay != null) config.overlay!,
             if (config.showBuffering && !value.isFinish && value.isBuffering)
               config.bufferingPlaceholder ?? const CircularProgressIndicator(),
-            if (config.showControls) const VideoViewControls(),
+            if (config.showControls?.call(value.isFullScreen) ?? true)
+              const VideoViewControls(),
             _buildPlaceholderWidget(),
           ],
         ),

@@ -43,8 +43,7 @@ class VideoViewConfig {
     this.systemOverlaysExitFullScreen = SystemUiOverlay.values,
     this.deviceOrientationsExitFullScreen = DeviceOrientation.values,
     this.showControlsOnInitialize = true,
-    this.showControls = true,
-    this.showTopControl,
+    this.showControls,
     this.hideControlsTimer = const Duration(seconds: 3),
     this.controlsBackgroundColor = const <Color>[
       Color.fromRGBO(0, 0, 0, .7),
@@ -218,12 +217,7 @@ class VideoViewConfig {
   /// Whether to display controls.
   ///
   /// Defaults to true.
-  final bool showControls;
-
-  /// Whether to display the controls at the top.
-  ///
-  /// Defaults to true.
-  final bool Function(bool isFullScreen)? showTopControl;
+  final bool Function(bool isFullScreen)? showControls;
 
   /// Defines the [Duration] before the video controls are hidden.
   ///
