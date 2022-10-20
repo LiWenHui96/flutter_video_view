@@ -1,3 +1,7 @@
+## 1.1.6+4
+
+* Fixed issues after code detection.
+
 ## 1.1.6+3
 
 * Modify the usage of `showControl`.
