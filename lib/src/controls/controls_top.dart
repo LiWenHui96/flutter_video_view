@@ -295,7 +295,7 @@ class _DeviceInfoRowState extends BaseState<_DeviceInfoRow> {
         },
       );
 
-      _connectivityResult = await ConnectivityUtil.getDescription(local);
+      _connectivityResult = await ConnectivityUtil.getDescription(local) ?? '';
     }
 
     setState(() {});

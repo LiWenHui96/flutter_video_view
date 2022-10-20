@@ -53,11 +53,11 @@ class _VideoViewState extends BaseState<VideoView> {
   }
 
   @override
-  void dispose() {
+  void deactivate() {
     /// Reset screen brightness.
     ScreenBrightnessUtil.resetScreenBrightness();
 
-    super.dispose();
+    super.deactivate();
   }
 
   Future<void> _pushToFullScreen() async {

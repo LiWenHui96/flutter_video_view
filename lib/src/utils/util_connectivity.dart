@@ -25,19 +25,21 @@ class ConnectivityUtil {
       _singleton._connectivity.checkConnectivity();
 
   /// Gets a description of the current connectivity.
-  static Future<String> getDescription(VideoLocalizations local) async {
+  static Future<String?> getDescription(VideoLocalizations local) async {
     final ConnectivityResult result = await current;
-    switch (result) {
-      case ConnectivityResult.bluetooth:
-        return local.bluetooth;
-      case ConnectivityResult.wifi:
-        return local.wifi;
-      case ConnectivityResult.ethernet:
-        return local.ethernet;
-      case ConnectivityResult.mobile:
-        return local.mobile;
-      case ConnectivityResult.none:
-        return local.none;
+
+    if (result == ConnectivityResult.bluetooth) {
+      return local.bluetooth;
+    } else if (result == ConnectivityResult.wifi) {
+      return local.wifi;
+    } else if (result == ConnectivityResult.ethernet) {
+      return local.ethernet;
+    } else if (result == ConnectivityResult.mobile) {
+      return local.mobile;
+    } else if (result == ConnectivityResult.none) {
+      return local.none;
+    } else {
+      return null;
     }
   }
 }
