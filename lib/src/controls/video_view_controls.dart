@@ -76,7 +76,7 @@ class _VideoViewControlsState extends BaseVideoViewControls<VideoViewControls> {
               bottom: false,
               child: Stack(
                 children: <Widget>[
-                  if (Navigator.canPop(context))
+                  if (videoViewConfig.canBack && Navigator.canPop(context))
                     IconButton(
                       icon: const Icon(Icons.arrow_back_ios),
                       color: foregroundColor,

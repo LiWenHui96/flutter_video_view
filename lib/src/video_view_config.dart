@@ -53,6 +53,7 @@ class VideoViewConfig {
     this.canLongPress = true,
     this.canChangeVolumeOrBrightness = true,
     this.canChangeProgress = true,
+    this.canBack = true,
     this.title,
     this.titleTextStyle,
     this.canShowDevice = false,
@@ -241,6 +242,11 @@ class VideoViewConfig {
   ///
   /// Defaults to true.
   final bool canChangeProgress;
+
+  /// Whether to show [BackButton].
+  ///
+  /// Defaults to true.
+  final bool canBack;
 
   /// The title of video.
   final String? title;

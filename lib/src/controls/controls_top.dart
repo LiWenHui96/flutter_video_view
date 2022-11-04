@@ -26,7 +26,7 @@ class _ControlsTopState extends BaseVideoViewControls<ControlsTop> {
   Widget build(BuildContext context) {
     Widget child = Row(
       children: <Widget>[
-        if (Navigator.canPop(context))
+        if (videoViewConfig.canBack && Navigator.canPop(context))
           IconButton(
             icon: const Icon(Icons.arrow_back_ios),
             color: videoViewConfig.foregroundColor,
