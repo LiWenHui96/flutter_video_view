@@ -1,3 +1,7 @@
+## 1.1.6+5
+
+* Add `canBack` to control whether [BackButton] is displayed.
+
 ## 1.1.6+4
 
 * Fixed issues after code detection.
