@@ -3,7 +3,7 @@ description: Demonstrates how to use the flutter_video_view plugin.
 
 publish_to: 'none'
 
-version: 1.1.6+13
+version: 1.1.6+14
 
 environment:
   sdk: ">=2.16.0 <3.0.0"
