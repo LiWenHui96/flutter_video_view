@@ -32,8 +32,9 @@ class VideoViewConfig {
     this.looping = false,
     this.overlay,
     this.placeholderBuilder,
+    this.beforePlayBuilder,
     this.showBuffering = true,
-    this.bufferingPlaceholder,
+    this.bufferingBuilder,
     this.finishBuilder,
     this.fullScreenByDefault = false,
     this.useRootNavigator = true,
@@ -50,6 +51,8 @@ class VideoViewConfig {
       Color.fromRGBO(0, 0, 0, .3),
       Color.fromRGBO(0, 0, 0, 0),
     ],
+    this.showCenterPlayButton = true,
+    this.centerPlayButton,
     this.canLongPress = true,
     this.canChangeVolumeOrBrightness = true,
     this.canChangeProgress = true,
@@ -173,13 +176,16 @@ class VideoViewConfig {
   /// Widgets in various initialized states.
   final Map<VideoInitState, Widget>? placeholderBuilder;
 
+  /// The widget to display before playback, i.e. [Duration.zero].
+  final Widget? beforePlayBuilder;
+
   /// Whether to show placeholders in the buffer.
   ///
   /// Defaults to true.
   final bool showBuffering;
 
-  /// The placeholder when buffered is displayed above the video.
-  final Widget? bufferingPlaceholder;
+  /// Widget to display when buffered is overlaid above the video.
+  final Widget? bufferingBuilder;
 
   /// Widget to display when video playback is complete.
   final Widget Function(BuildContext context, bool isFullScreen)? finishBuilder;
@@ -227,6 +233,14 @@ class VideoViewConfig {
 
   /// The background color of the controller.
   final List<Color> controlsBackgroundColor;
+
+  /// Whether to show the play button in the middle.
+  ///
+  /// Defaults to true.
+  final bool showCenterPlayButton;
+
+  /// Play button in the middle
+  final Widget? centerPlayButton;
 
   /// Whether the video can be played at double speed by long pressing.
   ///

@@ -124,8 +124,6 @@ class _VideoViewState extends BaseState<VideoView> {
                 ),
               ),
             if (config.overlay != null) config.overlay!,
-            if (config.showBuffering && !value.isFinish && value.isBuffering)
-              config.bufferingPlaceholder ?? const CircularProgressIndicator(),
             if (config.showControls?.call(value.isFullScreen) ?? true)
               const VideoViewControls(),
             _buildPlaceholderWidget(),

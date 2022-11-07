@@ -5,6 +5,7 @@ import 'package:flutter_video_view/src/utils/util_brightness.dart';
 import 'package:flutter_video_view/src/utils/util_volume.dart';
 import 'package:flutter_video_view/src/video_view.dart';
 import 'package:flutter_video_view/src/video_view_localizations.dart';
+import 'package:flutter_video_view/src/widgets/animated_play_pause.dart';
 import 'package:flutter_video_view/src/widgets/base_state.dart';
 
 import 'base_controls.dart';
@@ -39,6 +40,31 @@ class _VideoViewControlsState extends BaseVideoViewControls<VideoViewControls> {
           ],
         ),
         if (videoViewValue.isFullScreen) const ControlsCenter(),
+        if (videoViewConfig.showCenterPlayButton &&
+            !videoViewValue.isPlaying &&
+            !videoViewValue.isBuffering)
+          Center(
+            child: videoViewConfig.centerPlayButton != null
+                ? GestureDetector(
+                    onTap: playOrPause,
+                    child: videoViewConfig.centerPlayButton,
+                  )
+                : DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(.35),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: AnimatedPlayPause(
+                        isPlaying: videoViewValue.isPlaying,
+                        duration: defaultDuration,
+                        color: videoViewConfig.foregroundColor,
+                        onPressed: playOrPause,
+                      ),
+                    ),
+                  ),
+          ),
       ],
     );
 
@@ -65,6 +91,21 @@ class _VideoViewControlsState extends BaseVideoViewControls<VideoViewControls> {
       behavior: HitTestBehavior.opaque,
       child: child,
     );
+
+    if (videoViewConfig.beforePlayBuilder != null &&
+        videoViewValue.position <= Duration.zero) {
+      return GestureDetector(
+        onTap: playOrPause,
+        child: videoViewConfig.beforePlayBuilder,
+      );
+    }
+
+    if (videoViewConfig.showBuffering &&
+        !videoViewValue.isFinish &&
+        videoViewValue.isBuffering) {
+      return videoViewConfig.bufferingBuilder ??
+          const CircularProgressIndicator();
+    }
 
     if (videoViewValue.isFinish) {
       return videoViewConfig.finishBuilder
