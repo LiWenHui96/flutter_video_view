@@ -308,7 +308,7 @@ class VideoViewController extends ValueNotifier<VideoViewValue> {
   Future<void> play() async {
     if (value.isInitialized) {
       setCanFirstPlay();
-      
+
       /// When there is an error in playing the video, it will be adjusted to
       /// the corresponding progress during initialization.
       if (value.position > Duration.zero) {
