@@ -307,6 +307,8 @@ class VideoViewController extends ValueNotifier<VideoViewValue> {
   /// Starts playing the video.
   Future<void> play() async {
     if (value.isInitialized) {
+      setCanFirstPlay();
+      
       /// When there is an error in playing the video, it will be adjusted to
       /// the corresponding progress during initialization.
       if (value.position > Duration.zero) {
@@ -482,6 +484,11 @@ class VideoViewController extends ValueNotifier<VideoViewValue> {
     }
   }
 
+  /// Set whether to play for the first time.
+  void setCanFirstPlay() {
+    value = value.copyWith(canFirstPlay: false);
+  }
+
   /// Enter full-screen mode.
   @protected
   void enterFullScreen() {
@@ -549,6 +556,7 @@ class VideoViewValue {
     this.aspectRatio = 1.0,
     this.duration = Duration.zero,
     this.position = Duration.zero,
+    this.canFirstPlay = true,
     this.isFullScreen = false,
     this.isVisible = false,
     this.isLock = false,
@@ -580,6 +588,9 @@ class VideoViewValue {
 
   /// The current playback position.
   final Duration position;
+
+  /// Whether it is playing for the first time.
+  final bool canFirstPlay;
 
   /// Whether it is full screen mode.
   final bool isFullScreen;
@@ -710,6 +721,7 @@ class VideoViewValue {
     double? aspectRatio,
     Duration? duration,
     Duration? position,
+    bool? canFirstPlay,
     bool? isFullScreen,
     bool? isVisible,
     bool? isLock,
@@ -727,6 +739,7 @@ class VideoViewValue {
       aspectRatio: aspectRatio ?? this.aspectRatio,
       duration: duration ?? this.duration,
       position: position ?? this.position,
+      canFirstPlay: canFirstPlay ?? this.canFirstPlay,
       isFullScreen: isFullScreen ?? this.isFullScreen,
       isVisible: isVisible ?? this.isVisible,
       isLock: isLock ?? this.isLock,

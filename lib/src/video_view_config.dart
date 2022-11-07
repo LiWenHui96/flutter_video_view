@@ -239,7 +239,7 @@ class VideoViewConfig {
   /// Defaults to true.
   final bool showCenterPlayButton;
 
-  /// Play button in the middle
+  /// Play button in the middle.
   final Widget? centerPlayButton;
 
   /// Whether the video can be played at double speed by long pressing.

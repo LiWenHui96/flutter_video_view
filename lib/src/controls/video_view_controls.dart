@@ -93,7 +93,8 @@ class _VideoViewControlsState extends BaseVideoViewControls<VideoViewControls> {
     );
 
     if (videoViewConfig.beforePlayBuilder != null &&
-        videoViewValue.position <= Duration.zero) {
+        videoViewValue.position <= Duration.zero &&
+        videoViewValue.canFirstPlay) {
       return GestureDetector(
         onTap: playOrPause,
         child: videoViewConfig.beforePlayBuilder,
