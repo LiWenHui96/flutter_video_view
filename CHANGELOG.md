@@ -1,3 +1,8 @@
+## 1.1.7
+
+* Add `beforePlayBuilder`, `showCenterPlayButton`, `centerPlayButton`.
+* Update `bufferingPlaceholder` to `bufferingBuilder`.
+
 ## 1.1.6+5
 
 * Add `canBack` to control whether [BackButton] is displayed.
