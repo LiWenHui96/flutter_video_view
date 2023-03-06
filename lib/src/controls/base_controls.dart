@@ -20,6 +20,9 @@ abstract class BaseVideoControls<T extends StatefulWidget>
   /// Timer
   Timer? hideTimer;
 
+  /// Whether the loading is successful.
+  bool _isSuccess = false;
+
   @override
   void didChangeDependencies() {
     final VideoController? oldController = _controller;
@@ -58,6 +61,11 @@ abstract class BaseVideoControls<T extends StatefulWidget>
 
   void _updateState() {
     setState(() => _value = controller.value);
+
+    if (value.status.isSuccess && !_isSuccess) {
+      _isSuccess = true;
+      startHideTimer();
+    }
 
     SystemChrome.setSystemUIChangeCallback((_) async {
       if (!_ && value.isFullScreen) {
@@ -104,6 +112,10 @@ abstract class BaseVideoControls<T extends StatefulWidget>
   /// Start [hideTimer].
   @protected
   void startHideTimer() {
+    if (hideTimer != null) {
+      return;
+    }
+
     hideTimer = Timer(config.hideControlsTimer, () {
       controller.setVisible(false);
     });

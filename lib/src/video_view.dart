@@ -331,6 +331,10 @@ class VideoController extends ValueNotifier<VideoValue> {
       return;
     }
 
+    if (value.isVisible == isVisible) {
+      return;
+    }
+
     value = value.copyWith(isVisible: isVisible);
   }
 

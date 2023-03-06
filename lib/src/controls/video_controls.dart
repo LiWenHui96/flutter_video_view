@@ -135,7 +135,10 @@ class _VideoControlsState extends BaseVideoControls<VideoControls> {
   @override
   Future<void> initialize() async {
     if (config.showControlsOnInitialize) {
-      Future<void>.delayed(defaultDuration, () => showOrHide(visible: true));
+      Future<void>.delayed(
+        defaultDuration,
+        () => showOrHide(visible: true, startTimer: false),
+      );
     }
   }
 
