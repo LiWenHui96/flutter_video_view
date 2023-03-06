@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'base_state.dart';
 
-/// @Describe:
+/// @Describe: Play or Pause.
 ///
 /// @Author: LiWeNHuI
 /// @Date: 2022/6/22
@@ -12,7 +12,7 @@ class AnimatedPlayPause extends StatefulWidget {
   const AnimatedPlayPause({
     Key? key,
     required this.isPlaying,
-    required this.duration,
+    this.duration,
     this.size,
     this.color,
     this.onPressed,
@@ -22,7 +22,7 @@ class AnimatedPlayPause extends StatefulWidget {
   final bool isPlaying;
 
   /// The length of time this animation should last.
-  final Duration duration;
+  final Duration? duration;
 
   /// The size of [AnimatedIcon].
   final double? size;
@@ -45,7 +45,7 @@ class _AnimatedPlayPauseState extends BaseState<AnimatedPlayPause>
   late final AnimationController _animationController = AnimationController(
     vsync: this,
     value: widget.isPlaying ? 1 : 0,
-    duration: widget.duration,
+    duration: widget.duration ?? const Duration(milliseconds: 300),
   );
 
   @override

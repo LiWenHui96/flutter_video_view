@@ -80,7 +80,7 @@ linter:
     - avoid_js_rounded_ints
     - avoid_multiple_declarations_per_line # seems to be a stylistic choice we don't subscribe to
     - avoid_null_checks_in_equality_operators
-    - avoid_positional_boolean_parameters # would have been nice to enable this but by now there's too many places that break it
+    # - avoid_positional_boolean_parameters # would have been nice to enable this but by now there's too many places that break it
     - avoid_print
     - avoid_private_typedef_functions # we prefer having typedef (discussion in https://github.com/flutter/flutter/pull/16356)
     - avoid_redundant_argument_values
@@ -106,7 +106,7 @@ linter:
     - camel_case_extensions
     - camel_case_types
     - cancel_subscriptions
-    # - cascade_invocations # doesn't match the typical style of this repo
+    - cascade_invocations # doesn't match the typical style of this repo
     - cast_nullable_to_non_nullable
     - close_sinks # not reliable enough
     - comment_references # blocked on https://github.com/dart-lang/linter/issues/1142
@@ -151,7 +151,7 @@ linter:
     - null_check_on_nullable_type_parameter
     - null_closures
     # - omit_local_variable_types # opposite of always_specify_types
-    - one_member_abstracts # too many false positives
+    # - one_member_abstracts # too many false positives
     - only_throw_errors # this does get disabled in a few places where we have legacy code that uses strings et al
     - overridden_fields
     - package_api_docs

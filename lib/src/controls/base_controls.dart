@@ -2,37 +2,34 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_video_view/src/video_config.dart';
 import 'package:flutter_video_view/src/video_view.dart';
-import 'package:flutter_video_view/src/video_view_config.dart';
-import 'package:flutter_video_view/src/widgets/base_state.dart';
+import 'package:flutter_video_view/src/widgets/widgets.dart';
 
-/// @Describe: Base for VideoViewControls.
+/// @Describe: Base for VideoControls.
 ///
 /// @Author: LiWeNHuI
-/// @Date: 2022/6/16
+/// @Date: 2023/3/2
 
-abstract class BaseVideoViewControls<T extends StatefulWidget>
+abstract class BaseVideoControls<T extends StatefulWidget>
     extends BaseState<T> {
-  VideoViewController? _videoViewController;
-  late VideoViewValue _videoViewValue;
-  late VideoViewConfig _videoViewConfig;
+  VideoController? _controller;
+  late VideoValue _value;
+  late VideoConfig _config;
 
   /// Timer
   Timer? hideTimer;
 
-  /// Manipulate the default hide time of the widget.
-  final Duration defaultDuration = const Duration(milliseconds: 300);
-
   @override
   void didChangeDependencies() {
-    final VideoViewController? oldController = _videoViewController;
-    _videoViewController = VideoViewController.of(context);
-    _videoViewValue = videoViewController.value;
-    _videoViewConfig = videoViewValue.videoViewConfig;
+    final VideoController? oldController = _controller;
+    _controller = VideoController.of(context);
+    _value = controller.value;
+    _config = value.config;
 
-    if (oldController != _videoViewController) {
+    if (oldController != _controller) {
       _dispose();
-      _initialize();
+      _didChangeDependencies();
     }
 
     super.didChangeDependencies();
@@ -41,33 +38,32 @@ abstract class BaseVideoViewControls<T extends StatefulWidget>
   @override
   void dispose() {
     hideTimer?.cancel();
-
+    hideTimer = null;
     _dispose();
+
     super.dispose();
   }
 
-  void _initialize() {
+  void _didChangeDependencies() {
     /// Update data.
     _updateState();
-    _videoViewController?.addListener(_updateState);
+    _controller?.addListener(_updateState);
 
     initialize();
   }
 
   void _dispose() {
-    _videoViewController?.removeListener(_updateState);
+    _controller?.removeListener(_updateState);
   }
 
   void _updateState() {
-    setState(() => _videoViewValue = videoViewController.value);
+    setState(() => _value = controller.value);
 
-    SystemChrome.setSystemUIChangeCallback(
-        (bool systemOverlaysAreVisible) async {
-      if (!systemOverlaysAreVisible && videoViewValue.isFullScreen) {
+    SystemChrome.setSystemUIChangeCallback((_) async {
+      if (!_ && value.isFullScreen) {
         await SystemChrome.setEnabledSystemUIMode(
           SystemUiMode.manual,
-          overlays: videoViewConfig.systemOverlaysEnterFullScreen ??
-              <SystemUiOverlay>[],
+          overlays: <SystemUiOverlay>[],
         );
       }
     });
@@ -82,10 +78,8 @@ abstract class BaseVideoViewControls<T extends StatefulWidget>
   void showOrHide({bool? visible, bool startTimer = true}) {
     hideTimer?.cancel();
 
-    videoViewController.setVisible(
-      isVisible: visible ?? !videoViewValue.isVisible,
-    );
-    if (videoViewValue.isVisible && startTimer) {
+    controller.setVisible(visible ?? !value.isVisible);
+    if (value.isVisible && startTimer) {
       startHideTimer();
     }
   }
@@ -94,15 +88,15 @@ abstract class BaseVideoViewControls<T extends StatefulWidget>
   @protected
   void playOrPause() {
     if (canUse) {
-      if (videoViewValue.isPlaying) {
+      if (value.isPlaying) {
         showOrHide(visible: true, startTimer: false);
-        videoViewController.pause();
+        controller.pause();
       } else {
         showOrHide(visible: true);
-        if (videoViewValue.position >= videoViewValue.duration) {
-          videoViewController.seekTo(Duration.zero);
+        if (value.position >= value.duration) {
+          controller.seekTo(Duration.zero);
         }
-        videoViewController.play();
+        controller.play();
       }
     }
   }
@@ -110,46 +104,65 @@ abstract class BaseVideoViewControls<T extends StatefulWidget>
   /// Start [hideTimer].
   @protected
   void startHideTimer() {
-    hideTimer = Timer(
-      videoViewConfig.hideControlsTimer,
-      () => videoViewController.setVisible(isVisible: false),
-    );
+    hideTimer = Timer(config.hideControlsTimer, () {
+      controller.setVisible(false);
+    });
   }
 
   /// External package for volume and brightness, etc.
   @protected
-  Widget tipWidget({Widget? child}) {
+  Widget tooltipWidget({
+    Widget? child,
+    AlignmentGeometry? alignment,
+    EdgeInsetsGeometry? margin,
+  }) {
     if (child == null) {
       return const SizedBox.shrink();
     }
-    return Container(
-      decoration: BoxDecoration(
-        color: videoViewConfig.tipBackgroundColor,
-        borderRadius: BorderRadius.circular(6),
+
+    return Align(
+      alignment: alignment ?? Alignment.center,
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: config.tooltipBackgroundColor,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        margin: margin,
+        child: child,
       ),
-      padding: const EdgeInsets.all(8),
-      child: child,
+    );
+  }
+
+  /// Back Button.
+  @protected
+  Widget kBackButton() {
+    return IconButton(
+      iconSize: config.iconSize,
+      color: config.foregroundColor,
+      onPressed: () async => Navigator.maybePop(context),
+      tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+      icon: const Icon(Icons.arrow_back_ios),
     );
   }
 
   /// Whether the operation can be performed.
   bool get canUse =>
-      !videoViewValue.isLock &&
-      videoViewValue.isInitialized &&
-      videoViewValue.videoInitState == VideoInitState.success;
+      !value.isLock && value.isInitialized && value.status.isSuccess;
 
   /// The style of all text.
-  TextStyle get defaultStyle => TextStyle(
-        fontSize: videoViewConfig.defaultTextSize,
-        color: videoViewConfig.foregroundColor,
-      );
+  TextStyle get defaultStyle =>
+      TextStyle(fontSize: config.textSize, color: config.foregroundColor);
 
   // ignore: public_member_api_docs
-  VideoViewController get videoViewController => _videoViewController!;
+  VideoController get controller => _controller!;
 
   // ignore: public_member_api_docs
-  VideoViewValue get videoViewValue => _videoViewValue;
+  VideoValue get value => _value;
 
   // ignore: public_member_api_docs
-  VideoViewConfig get videoViewConfig => _videoViewConfig;
+  VideoConfig get config => _config;
 }
+
+/// Manipulate the default hide time of the widget.
+const Duration defaultDuration = Duration(milliseconds: 300);

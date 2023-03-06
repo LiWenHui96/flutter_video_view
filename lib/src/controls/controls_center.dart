@@ -1,42 +1,76 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_video_view/src/video_config.dart';
+import 'package:flutter_video_view/src/video_view.dart';
+import 'package:flutter_video_view/src/widgets/widgets.dart';
 
 import 'base_controls.dart';
 
 /// @Describe: Center action bar
 ///
 /// @Author: LiWeNHuI
-/// @Date: 2022/6/23
+/// @Date: 2023/3/3
 
-class ControlsCenter extends StatefulWidget {
-  // ignore: public_member_api_docs
-  const ControlsCenter({Key? key}) : super(key: key);
+class ControlsCenter extends StatelessWidget {
+  /// Center action bar
+  const ControlsCenter({Key? key, required this.onHideControls})
+      : super(key: key);
 
-  @override
-  State<ControlsCenter> createState() => _ControlsCenterState();
-}
+  /// Used to hide controllers.
+  final VoidCallback onHideControls;
 
-class _ControlsCenterState extends BaseVideoViewControls<ControlsCenter> {
   @override
   Widget build(BuildContext context) {
+    final VideoController controller = VideoController.of(context);
+    final VideoValue value = controller.value;
+    final VideoConfig config = controller.config;
+
+    AnimatedLockButton _lockButton() {
+      return AnimatedLockButton(
+        isLock: value.isLock,
+        canShowLock: config.showLock,
+        backgroundColor: config.tooltipBackgroundColor,
+        duration: defaultDuration,
+        color: config.foregroundColor,
+        onPressed: () {
+          controller.setLock(!value.isLock);
+          onHideControls.call();
+        },
+      );
+    }
+
+    Widget _actions(List<Widget>? list) {
+      list ??= <Widget>[_lockButton()];
+
+      final List<Widget> children = list.map((Widget child) {
+        if (child is AnimatedLockButton) {
+          return child;
+        }
+
+        return Container(
+          padding:
+              child is IconButton ? EdgeInsets.zero : const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: config.tooltipBackgroundColor,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: child,
+        );
+      }).toList();
+
+      return Column(mainAxisSize: MainAxisSize.min, children: children);
+    }
+
     final Widget child = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
         _actions(
-          videoViewConfig.centerLeftActions?.call(
-            context,
-            videoViewValue.isFullScreen,
-            videoViewValue.isLock,
-            _lockButton(),
-          ),
+          config.centerLeftActions
+              ?.call(context, value.isFullScreen, value.isLock, _lockButton()),
         ),
         const Spacer(),
         _actions(
-          videoViewConfig.centerRightActions?.call(
-            context,
-            videoViewValue.isFullScreen,
-            videoViewValue.isLock,
-            _lockButton(),
-          ),
+          config.centerRightActions
+              ?.call(context, value.isFullScreen, value.isLock, _lockButton()),
         ),
       ],
     );
@@ -45,83 +79,5 @@ class _ControlsCenterState extends BaseVideoViewControls<ControlsCenter> {
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: SafeArea(top: false, bottom: false, child: child),
     );
-  }
-
-  _AnimatedLockButton _lockButton() {
-    return _AnimatedLockButton(
-      isLock: videoViewValue.isLock,
-      canShowLock: videoViewConfig.canShowLock,
-      backgroundColor: videoViewConfig.tipBackgroundColor,
-      duration: defaultDuration,
-      color: videoViewConfig.foregroundColor,
-      onPressed: () {
-        videoViewController.setLock(isLock: !videoViewValue.isLock);
-        showOrHide(visible: true);
-      },
-    );
-  }
-
-  Widget _actions(List<Widget>? oldList) {
-    final List<Widget> children =
-        (oldList ?? <Widget>[_lockButton()]).map((Widget child) {
-      if (child is _AnimatedLockButton) {
-        return child;
-      }
-      return Container(
-        padding:
-            child is IconButton ? EdgeInsets.zero : const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: videoViewConfig.tipBackgroundColor,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: child,
-      );
-    }).toList();
-
-    return Column(mainAxisSize: MainAxisSize.min, children: children);
-  }
-}
-
-class _AnimatedLockButton extends StatelessWidget {
-  const _AnimatedLockButton({
-    Key? key,
-    required this.isLock,
-    required this.canShowLock,
-    required this.backgroundColor,
-    required this.duration,
-    this.color = Colors.white,
-    this.onPressed,
-  }) : super(key: key);
-
-  final bool isLock;
-  final bool canShowLock;
-  final Color backgroundColor;
-  final Duration duration;
-  final Color color;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    Widget child = IconButton(
-      icon: AnimatedCrossFade(
-        duration: duration,
-        crossFadeState:
-            isLock ? CrossFadeState.showFirst : CrossFadeState.showSecond,
-        alignment: Alignment.center,
-        firstChild: Icon(Icons.lock_outline, color: color),
-        secondChild: Icon(Icons.lock_open_outlined, color: color),
-      ),
-      onPressed: onPressed,
-    );
-
-    child = DecoratedBox(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: child,
-    );
-
-    return Visibility(visible: canShowLock, child: child);
   }
 }

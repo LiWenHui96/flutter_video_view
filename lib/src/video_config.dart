@@ -6,19 +6,20 @@ import 'video_view.dart';
 /// @Describe: The config of VideoView.
 ///
 /// @Author: LiWeNHuI
-/// @Date: 2022/6/22
+/// @Date: 2023/3/1
 
-class VideoViewConfig {
-  // ignore: public_member_api_docs
-  VideoViewConfig({
+class VideoConfig {
+  /// Overall configuration for the video view. Including [width], [height],
+  /// [useSafe], [backgroundColor] etc.
+  VideoConfig({
     this.width,
     this.height,
     this.backgroundColor = Colors.black,
-    this.tipBackgroundColor = Colors.black54,
+    this.tooltipBackgroundColor = Colors.black54,
     this.foregroundColor = Colors.white,
-    this.defaultTextSize = 14,
-    this.defaultIconSize = 16,
-    this.canUseSafe = true,
+    this.textSize = 14,
+    this.iconSize = 16,
+    this.useSafe = true,
     this.maxScale = 2.5,
     this.minScale = 0.8,
     this.panEnabled = false,
@@ -32,14 +33,11 @@ class VideoViewConfig {
     this.looping = false,
     this.overlay,
     this.placeholderBuilder,
-    this.beforePlayBuilder,
     this.showBuffering = true,
     this.bufferingBuilder,
     this.finishBuilder,
     this.fullScreenByDefault = false,
     this.useRootNavigator = true,
-    this.routePageBuilder,
-    this.systemOverlaysEnterFullScreen,
     this.deviceOrientationsEnterFullScreen,
     this.systemOverlaysExitFullScreen = SystemUiOverlay.values,
     this.deviceOrientationsExitFullScreen = DeviceOrientation.values,
@@ -51,7 +49,7 @@ class VideoViewConfig {
       Color.fromRGBO(0, 0, 0, .3),
       Color.fromRGBO(0, 0, 0, 0),
     ],
-    this.showCenterPlayButton = true,
+    this.showCenterPlay = true,
     this.centerPlayButton,
     this.canLongPress = true,
     this.canChangeVolumeOrBrightness = true,
@@ -59,9 +57,8 @@ class VideoViewConfig {
     this.canBack = true,
     this.title,
     this.titleTextStyle,
-    this.canShowDevice = false,
     this.topActions,
-    this.canShowLock = false,
+    this.showLock = false,
     this.centerLeftActions,
     this.centerRightActions,
     this.bottomBuilder,
@@ -97,7 +94,7 @@ class VideoViewConfig {
   /// brightness, speed, playback progress, and so on.
   ///
   /// Defaults to black54.
-  final Color tipBackgroundColor;
+  final Color tooltipBackgroundColor;
 
   /// The color for the video's Button` and `Text` widget descendants.
   ///
@@ -107,17 +104,17 @@ class VideoViewConfig {
   /// Size of all texts.
   ///
   /// Defaults to 14.
-  final double defaultTextSize;
+  final double textSize;
 
   /// Size of all icons.
   ///
   /// Defaults to 16.
-  final double defaultIconSize;
+  final double iconSize;
 
-  /// When it is at the top, whether to maintain a safe distance from the top.
+  /// Whether to maintain a safe distance from the top.
   ///
-  /// Defaults to false.
-  final bool canUseSafe;
+  /// Defaults to true.
+  final bool useSafe;
 
   /// The maximum allowed scale.
   ///
@@ -174,10 +171,7 @@ class VideoViewConfig {
   final Widget? overlay;
 
   /// Widgets in various initialized states.
-  final Map<VideoInitState, Widget>? placeholderBuilder;
-
-  /// The widget to display before playback, i.e. [Duration.zero].
-  final Widget? beforePlayBuilder;
+  final PlaceholderBuilder? placeholderBuilder;
 
   /// Whether to show placeholders in the buffer.
   ///
@@ -200,12 +194,6 @@ class VideoViewConfig {
   ///
   /// Defaults to true.
   final bool useRootNavigator;
-
-  /// Defines a custom `RoutePageBuilder` for the fullscreen.
-  final VideoViewRoutePageBuilder? routePageBuilder;
-
-  /// Defines the system overlays visible on entering fullscreen.
-  final List<SystemUiOverlay>? systemOverlaysEnterFullScreen;
 
   /// Defines the set of allowed device orientations on entering fullscreen.
   final List<DeviceOrientation>? deviceOrientationsEnterFullScreen;
@@ -237,7 +225,7 @@ class VideoViewConfig {
   /// Whether to show the play button in the middle.
   ///
   /// Defaults to true.
-  final bool showCenterPlayButton;
+  final bool showCenterPlay;
 
   /// Play button in the middle.
   final Widget? centerPlayButton;
@@ -268,15 +256,12 @@ class VideoViewConfig {
   /// The textStyle of [title].
   final TextStyle? titleTextStyle;
 
-  /// Whether to display the information of time, power and network status.
-  final bool canShowDevice;
-
   /// Widgets placed at the top right.
   final List<Widget> Function(BuildContext context, bool isFullScreen)?
       topActions;
 
   /// Whether the lockable button is displayed.
-  final bool canShowLock;
+  final bool showLock;
 
   /// Widgets on the middle left.
   ///
@@ -323,3 +308,6 @@ class VideoViewConfig {
   /// See [VideoViewProgressColors] for default values.
   final VideoViewProgressColors? videoViewProgressColors;
 }
+
+// ignore: public_member_api_docs
+typedef PlaceholderBuilder = Widget? Function(VideoInitStatus status);

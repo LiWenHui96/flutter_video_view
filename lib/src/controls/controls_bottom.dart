@@ -1,9 +1,6 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_video_view/src/video_view.dart';
-import 'package:flutter_video_view/src/widgets/animated_play_pause.dart';
-import 'package:flutter_video_view/src/widgets/base_state.dart';
+import 'package:flutter_video_view/src/widgets/widgets.dart';
 import 'package:video_player/video_player.dart';
 
 import 'base_controls.dart';
@@ -11,7 +8,7 @@ import 'base_controls.dart';
 /// @Describe: Bottom action bar
 ///
 /// @Author: LiWeNHuI
-/// @Date: 2022/6/23
+/// @Date: 2023/3/5
 
 class ControlsBottom extends StatefulWidget {
   // ignore: public_member_api_docs
@@ -21,31 +18,31 @@ class ControlsBottom extends StatefulWidget {
   State<ControlsBottom> createState() => _ControlsBottomState();
 }
 
-class _ControlsBottomState extends BaseVideoViewControls<ControlsBottom> {
+class _ControlsBottomState extends BaseVideoControls<ControlsBottom> {
   double? _lastVolume;
 
   @override
   Widget build(BuildContext context) {
-    Widget child = videoViewConfig.bottomBuilder?.call(
-          context,
-          videoViewValue.isFullScreen,
-          _buildPlayPauseButton(),
-          _buildProgressBar(),
-          _buildMuteButton(),
-          _buildFullScreenButton(),
-        ) ??
-        Row(
-          children: <Widget>[
-            _buildPlayPauseButton(),
-            Expanded(child: _buildProgressBar()),
-            _buildFullScreenButton(),
-          ],
-        );
+    final Widget a = AnimatedPlayPause(
+      isPlaying: value.isPlaying,
+      duration: defaultDuration,
+      color: config.foregroundColor,
+      onPressed: playOrPause,
+    );
+
+    final Widget b = _buildProgressBar();
+
+    final Widget c = _buildMuteButton();
+
+    final Widget d = _buildFullScreenButton();
+
+    Widget? child =
+        config.bottomBuilder?.call(context, value.isFullScreen, a, b, c, d);
 
     child = SafeArea(
       top: false,
-      bottom: videoViewValue.isPortrait && videoViewValue.isFullScreen,
-      child: child,
+      bottom: value.isPortrait && value.isFullScreen,
+      child: child ?? Row(children: <Widget>[a, Expanded(child: b), d]),
     );
 
     return Container(
@@ -54,34 +51,25 @@ class _ControlsBottomState extends BaseVideoViewControls<ControlsBottom> {
         gradient: LinearGradient(
           begin: Alignment.bottomCenter,
           end: Alignment.topCenter,
-          colors: videoViewConfig.controlsBackgroundColor,
+          colors: config.controlsBackgroundColor,
         ),
       ),
       child: child,
     );
   }
 
-  Widget _buildPlayPauseButton() {
-    return AnimatedPlayPause(
-      onPressed: playOrPause,
-      duration: defaultDuration,
-      color: videoViewConfig.foregroundColor,
-      isPlaying: videoViewValue.isPlaying,
-    );
-  }
-
   Widget _buildMuteButton() {
     return _AnimatedMute(
-      isMute: videoViewValue.volume == 0,
+      isMute: value.volume == 0,
       duration: defaultDuration,
-      color: videoViewConfig.foregroundColor,
+      color: config.foregroundColor,
       onPressed: () {
         if (canUse) {
-          if (videoViewValue.volume == 0) {
-            videoViewController.setVolume(_lastVolume ?? .5);
+          if (value.volume == 0) {
+            controller.setVolume(_lastVolume ?? .5);
           } else {
-            _lastVolume = videoViewValue.volume;
-            videoViewController.setVolume(0);
+            _lastVolume = value.volume;
+            controller.setVolume(0);
           }
 
           showOrHide(visible: true);
@@ -92,19 +80,18 @@ class _ControlsBottomState extends BaseVideoViewControls<ControlsBottom> {
 
   Widget _buildFullScreenButton() {
     return _AnimatedFullscreen(
-      isFullscreen: videoViewValue.isFullScreen,
+      isFullscreen: value.isFullScreen,
       duration: defaultDuration,
-      color: videoViewConfig.foregroundColor,
+      color: config.foregroundColor,
       onPressed: () {
-        if (!canUse) {
-          return;
+        if (canUse) {
+          controller.setFullScreen(!value.isFullScreen);
+
+          Future<void>.delayed(
+            defaultDuration,
+            () => showOrHide(visible: true),
+          );
         }
-
-        videoViewController.setFullScreen(
-          isFullScreen: !videoViewValue.isFullScreen,
-        );
-
-        Future<void>.delayed(defaultDuration, () => showOrHide(visible: true));
       },
     );
   }
@@ -142,18 +129,15 @@ class _ControlsBottomState extends BaseVideoViewControls<ControlsBottom> {
     }
   }
 
-  SizedBox get divider => SizedBox(
-        width:
-            videoViewConfig.progressBarGap?.call(videoViewValue.isFullScreen) ??
-                10,
-      );
+  SizedBox get divider =>
+      SizedBox(width: config.progressBarGap?.call(value.isFullScreen) ?? 10);
 
   Widget _buildPosition() {
-    return Text(formatDuration(videoViewValue.position), style: defaultStyle);
+    return Text(formatDuration(value.position), style: defaultStyle);
   }
 
   Widget _buildDuration() {
-    String text = formatDuration(videoViewValue.duration);
+    String text = formatDuration(value.duration);
 
     if (textPosition == VideoTextPosition.ltl ||
         textPosition == VideoTextPosition.rtr) {
@@ -165,32 +149,32 @@ class _ControlsBottomState extends BaseVideoViewControls<ControlsBottom> {
 
   Widget _buildProgress() {
     final Widget child = _VideoProgressBar(
-      colors: videoViewConfig.videoViewProgressColors,
-      value: videoViewValue,
+      colors: config.videoViewProgressColors,
+      value: value,
       onDragStart: (DragStartDetails details) {
         if (canUse) {
-          videoViewController.setDragProgress(isDragProgress: true);
+          controller.setDragProgress(true);
         }
       },
       onDragUpdate: (double relative) {
-        if (canUse && videoViewValue.isDragProgress) {
+        if (canUse && value.isDragProgress) {
+          controller.setDragDuration(value.duration * relative);
           showOrHide(visible: true, startTimer: false);
-          videoViewController
-              .setDragDuration(videoViewValue.duration * relative);
         }
       },
       onDragEnd: (DragEndDetails details) {
-        if (videoViewValue.isDragProgress) {
-          videoViewController.setDragProgress(isDragProgress: false);
+        if (value.isDragProgress) {
+          controller
+            ..setDragProgress(false)
+            ..seekTo(value.dragDuration);
           showOrHide(visible: true);
-          videoViewController.seekTo(videoViewValue.dragDuration);
         }
       },
       onTapUp: (double relative) {
         if (canUse) {
-          videoViewController
-              .setDragDuration(videoViewValue.duration * relative);
-          videoViewController.seekTo(videoViewValue.dragDuration);
+          controller
+            ..setDragDuration(value.duration * relative)
+            ..seekTo(value.dragDuration);
         }
       },
     );
@@ -199,8 +183,7 @@ class _ControlsBottomState extends BaseVideoViewControls<ControlsBottom> {
   }
 
   VideoTextPosition get textPosition =>
-      videoViewConfig.textPosition?.call(videoViewValue.isFullScreen) ??
-      VideoTextPosition.ltl;
+      config.textPosition?.call(value.isFullScreen) ?? VideoTextPosition.ltl;
 }
 
 class _AnimatedMute extends StatelessWidget {
@@ -215,7 +198,6 @@ class _AnimatedMute extends StatelessWidget {
   final bool isMute;
   final Duration duration;
   final Color color;
-
   final VoidCallback? onPressed;
 
   @override
@@ -277,7 +259,7 @@ class _VideoProgressBar extends StatefulWidget {
         super(key: key);
 
   final VideoViewProgressColors colors;
-  final VideoViewValue value;
+  final VideoValue value;
   final GestureDragStartCallback onDragStart;
   final ValueChanged<double> onDragUpdate;
   final GestureDragEndCallback onDragEnd;
@@ -324,7 +306,7 @@ class _VideoProgressBarState extends BaseState<_VideoProgressBar> {
 class _ProgressBarPainter extends CustomPainter {
   _ProgressBarPainter({required this.value, required this.colors});
 
-  final VideoViewValue value;
+  final VideoValue value;
   final VideoViewProgressColors colors;
 
   @override

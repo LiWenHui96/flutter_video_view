@@ -16,31 +16,54 @@ class VideoPage extends StatefulWidget {
 }
 
 class _VideoPageState extends State<VideoPage> {
+  VideoController? controller;
+
+  @override
+  void initState() {
+    Future<void>.delayed(Duration.zero, () {
+      final String? url = ModalRoute.of(context)?.settings.arguments as String?;
+
+      controller = VideoController(
+        videoPlayerController: VideoPlayerController.network(url ?? ''),
+        videoConfig: VideoConfig(
+          height: 260,
+          // autoInitialize: true,
+          autoPlay: true,
+          deviceOrientationsExitFullScreen: <DeviceOrientation>[
+            DeviceOrientation.portraitUp,
+          ],
+        ),
+      );
+
+      setState(() {});
+    });
+
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    controller?.dispose();
+
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final String? url = ModalRoute.of(context)?.settings.arguments as String?;
-    final VideoViewController controller = VideoViewController(
-      videoPlayerController: VideoPlayerController.network(url ?? ''),
-      videoViewConfig: VideoViewConfig(
-        height: 260,
-        // aspectRatio: MediaQueryData.fromWindow(window).size.width / 260,
-        autoInitialize: true,
-        title: 'This is a small video of the test',
-        deviceOrientationsExitFullScreen: <DeviceOrientation>[
-          DeviceOrientation.portraitUp,
-        ],
-      ),
-    );
-
     return Scaffold(
       body: Column(
         children: <Widget>[
-          VideoView(controller: controller),
-          Container(
-            height: 40,
-            color: Colors.white,
-            alignment: Alignment.centerLeft,
-            child: const Text('这是一个视频测试'),
+          if (controller != null)
+            Flexible(child: VideoView(controller: controller!)),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Container(
+                height: 1000,
+                color: Colors.white,
+                alignment: Alignment.centerLeft,
+                child: const Text('这是一个视频测试'),
+              ),
+            ),
           ),
         ],
       ),

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -8,13 +7,11 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock/wakelock.dart';
 
-import 'controls/video_view_controls.dart';
-import 'utils/util_brightness.dart';
-import 'utils/util_event.dart';
-import 'video_view_config.dart';
-import 'video_view_localizations.dart';
-import 'widgets/animated_play_pause.dart';
-import 'widgets/base_state.dart';
+import 'controls/video_controls.dart';
+import 'utils/utils.dart';
+import 'video_body.dart';
+import 'video_config.dart';
+import 'widgets/widgets.dart';
 
 /// @Describe: The view of video.
 ///
@@ -22,34 +19,34 @@ import 'widgets/base_state.dart';
 /// @Date: 2022/6/22
 
 class VideoView extends StatefulWidget {
-  // ignore: public_member_api_docs
+  /// Uses the given [controller] for all video rendered in this widget.
   const VideoView({Key? key, required this.controller}) : super(key: key);
 
   /// The controller of [VideoView].
   ///
   /// Initialize [VideoPlayerController] and other functions.
-  final VideoViewController controller;
+  final VideoController controller;
 
   @override
   State<VideoView> createState() => _VideoViewState();
 }
 
 class _VideoViewState extends BaseState<VideoView> {
+  /// Monitor fullscreen status changes.
+  StreamSubscription<bool>? _fullScreenListener;
+
   @override
   void initState() {
-    EventBusUtil.onFullScreen().listen((bool isFullScreen) async {
-      if (isFullScreen) {
-        await _pushToFullScreen();
-      } else {
-        controller.exitFullScreen();
-        if (!mounted) {
-          return;
-        }
-        Navigator.of(context, rootNavigator: config.useRootNavigator).pop();
-      }
-    });
+    _fullScreenListener = controller.fullScreenStream?.stream.listen(_listener);
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _fullScreenListener?.cancel();
+
+    super.dispose();
   }
 
   @override
@@ -60,6 +57,15 @@ class _VideoViewState extends BaseState<VideoView> {
     super.deactivate();
   }
 
+  Future<void> _listener(bool isFullScreen) async {
+    if (isFullScreen) {
+      await _pushToFullScreen();
+    } else {
+      controller.exitFullScreen();
+      Navigator.of(context, rootNavigator: config.useRootNavigator).pop();
+    }
+  }
+
   Future<void> _pushToFullScreen() async {
     final TransitionRoute<void> route = PageRouteBuilder<void>(
       pageBuilder: (
@@ -67,7 +73,7 @@ class _VideoViewState extends BaseState<VideoView> {
         Animation<double> animation,
         Animation<double> secondaryAnimation,
       ) {
-        final VideoViewControllerInherited child = _buildWidget();
+        final VideoControllerInherited child = _buildWidget();
 
         return AnimatedBuilder(
           animation: animation,
@@ -81,9 +87,6 @@ class _VideoViewState extends BaseState<VideoView> {
     );
 
     controller.enterFullScreen();
-    if (!mounted) {
-      return;
-    }
     await Navigator.of(context, rootNavigator: config.useRootNavigator)
         .push(route);
     controller.exitFullScreen();
@@ -91,124 +94,56 @@ class _VideoViewState extends BaseState<VideoView> {
 
   @override
   Widget build(BuildContext context) {
-    final double contextHeight = MediaQuery.of(context).size.height;
+    final MediaQueryData data = MediaQuery.of(context);
+
+    final double contextHeight = data.size.height;
     final double height = config.height ?? contextHeight;
-    final double statusBarHeight =
-        config.canUseSafe ? MediaQueryData.fromWindow(window).padding.top : 0;
+    final double statusBarHeight = config.useSafe ? data.padding.top : 0;
 
     return Container(
       padding: EdgeInsets.only(top: statusBarHeight),
       decoration: BoxDecoration(color: config.backgroundColor),
-      width: config.width ?? MediaQuery.of(context).size.width,
-      height: height < contextHeight ? height + statusBarHeight : contextHeight,
+      constraints: BoxConstraints.expand(
+        width: config.width ?? data.size.width,
+        height:
+            height < contextHeight ? height + statusBarHeight : contextHeight,
+      ),
       child: _buildWidget(),
     );
   }
 
-  VideoViewControllerInherited _buildWidget() {
-    final Widget child = ChangeNotifierProvider<VideoViewController>.value(
-      value: controller,
-      child: Consumer<VideoViewController>(
-        builder: (_, __, ___) => Stack(
-          alignment: Alignment.center,
-          children: <Widget>[
-            if (value.videoInitState == VideoInitState.success)
-              InteractiveViewer(
-                maxScale: config.maxScale,
-                minScale: config.minScale,
-                panEnabled: config.panEnabled,
-                scaleEnabled: config.scaleEnabled,
-                child: AspectRatio(
-                  aspectRatio: value.aspectRatio,
-                  child: VideoPlayer(controller.videoPlayerController),
-                ),
-              ),
-            if (config.overlay != null) config.overlay!,
-            if (config.showControls?.call(value.isFullScreen) ?? true)
-              const VideoViewControls(),
-            _buildPlaceholderWidget(),
-          ],
+  VideoControllerInherited _buildWidget() {
+    return VideoControllerInherited(
+      controller: controller,
+      child: ChangeNotifierProvider<VideoController>.value(
+        value: controller,
+        child: Selector<VideoController, VideoValue>(
+          builder: (_, __, ___) =>
+              LayoutBuilder(builder: (_, __) => VideoBody(constraints: __)),
+          selector: (_, __) => __.value,
         ),
       ),
     );
-
-    return VideoViewControllerInherited(controller: controller, child: child);
   }
 
-  Widget _buildPlaceholderWidget() {
-    final Map<VideoInitState, Widget> map =
-        config.placeholderBuilder ?? <VideoInitState, Widget>{};
+  VideoConfig get config => controller.config;
 
-    if (value.videoInitState == VideoInitState.none) {
-      return map[VideoInitState.none] ??
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(.9),
-              shape: BoxShape.circle,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(4),
-              child: AnimatedPlayPause(
-                isPlaying: false,
-                duration: const Duration(milliseconds: 300),
-                size: 24,
-                onPressed: _initialize,
-              ),
-            ),
-          );
-    } else if (value.videoInitState == VideoInitState.initializing) {
-      return map[VideoInitState.initializing] ??
-          const CircularProgressIndicator();
-    } else if (value.videoInitState == VideoInitState.fail) {
-      return map[VideoInitState.fail] ??
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text(local.loadFailed, style: defaultStyle),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: _initialize,
-                child: Text(local.retry, style: defaultStyle),
-              ),
-            ],
-          );
-    }
-
-    return const SizedBox.shrink();
-  }
-
-  bool get isControllerFullScreen => value.isFullScreen;
-
-  Future<void> _initialize() async => controller.initialize();
-
-  TextStyle get defaultStyle => TextStyle(
-        fontSize: config.defaultTextSize,
-        color: config.foregroundColor,
-      );
-
-  VideoLocalizations get local => VideoLocalizations.of(context);
-
-  VideoViewValue get value => controller.value;
-
-  VideoViewConfig get config => controller.config;
-
-  VideoViewController get controller => widget.controller;
+  VideoController get controller => widget.controller;
 }
 
 /// The controller of VideoView.
 /// Add VideoPlayerController.
 ///
 /// initialize, play, setLooping, pause, seekTo, setVolume
-class VideoViewController extends ValueNotifier<VideoViewValue> {
-  // ignore: public_member_api_docs
-  VideoViewController({
+class VideoController extends ValueNotifier<VideoValue> {
+  /// Constructs a [VideoController] playing a video from an asset.
+  VideoController({
     required this.videoPlayerController,
-    VideoViewConfig? videoViewConfig,
+    VideoConfig? videoConfig,
   }) : super(
-          VideoViewValue(
+          VideoValue(
             videoPlayerValue: VideoPlayerValue.uninitialized(),
-            videoViewConfig: videoViewConfig ?? VideoViewConfig(),
+            config: videoConfig ?? VideoConfig(),
           ),
         ) {
     _initialize();
@@ -217,12 +152,6 @@ class VideoViewController extends ValueNotifier<VideoViewValue> {
   /// The controller of video.
   final VideoPlayerController videoPlayerController;
 
-  // ignore: public_member_api_docs
-  static VideoViewController of(BuildContext context) => context
-      .dependOnInheritedWidgetOfExactType<VideoViewControllerInherited>()!
-      .controller;
-
-  Timer? _timer;
   bool _isDisposed = false;
 
   /// Whether to initialize for the first time. If the initialization process
@@ -233,15 +162,30 @@ class VideoViewController extends ValueNotifier<VideoViewValue> {
   /// Whether wakelock has been opened before it is opened.
   bool _beforeEnableWakelock = false;
 
+  // ignore: public_member_api_docs
+  static VideoController of(BuildContext context) => context
+      .dependOnInheritedWidgetOfExactType<VideoControllerInherited>()!
+      .controller;
+
+  /// Carry out the initialization operation of the video.
   Future<void> _initialize() async {
-    unawaited(setLooping(looping: config.looping));
-    unawaited(setVolume(config.volume));
+    /// Enable monitoring in full screen state.
+    fullScreenStream ??= StreamController<bool>.broadcast();
+
+    /// The setting before initialization.
+    ///
+    /// [setLooping], [setVolume] etc.
+    final List<Future<void>> futures = <Future<void>>[
+      setLooping(config.looping),
+      setVolume(config.volume),
+    ];
+    unawaited(Future.wait(futures));
 
     if ((config.autoInitialize || config.autoPlay) && !value.isInitialized) {
       await initialize();
     }
 
-    if (value.videoInitState == VideoInitState.success) {
+    if (value.status.isSuccess) {
       await seekTo(config.startAt);
     }
 
@@ -257,109 +201,99 @@ class VideoViewController extends ValueNotifier<VideoViewValue> {
 
   /// Initialize the controller.
   Future<void> initialize() async {
-    value = value.copyWith(videoInitState: VideoInitState.initializing);
+    value = value.copyWith(status: VideoInitStatus.loading);
 
     /// This is the process of video initialization to obtain the relevant
     /// status.
     try {
       await videoPlayerController.initialize();
       value = value.copyWith(
-        videoInitState: videoPlayerController.value.isInitialized
-            ? VideoInitState.success
-            : VideoInitState.fail,
+        status: videoPlayerController.value.isInitialized
+            ? VideoInitStatus.success
+            : VideoInitStatus.fail,
         duration: videoPlayerController.value.duration,
       );
     } catch (e) {
-      value = value.copyWith(videoInitState: VideoInitState.fail);
+      value = value.copyWith(status: VideoInitStatus.fail);
     }
 
-    if (value.videoInitState == VideoInitState.fail) {
+    if (value.status.isFail) {
       isFirstInit ? isFirstInit = false : await initialize();
     }
 
-    if (value.videoInitState == VideoInitState.success) {
+    if (value.status.isSuccess) {
       isFirstInit = false;
 
       /// Update [VideoPlayerValue].
+      ///
+      /// After initialization, obtain the aspect ratio and the direction of
+      /// video in full screen mode.
       value = value.copyWith(
         videoPlayerValue: videoPlayerController.value,
         aspectRatio:
             config.aspectRatio ?? videoPlayerController.value.aspectRatio,
       );
 
-      /// After initialization, obtain the aspect ratio and the direction of
-      /// video in full screen mode.
       if (config.autoPlay) {
         await play();
       }
     }
   }
 
-  /// Sets whether or not the video should loop after playing once.
-  Future<void> setLooping({bool looping = false}) async {
-    await videoPlayerController.setLooping(looping);
+  /// Starts playing the video.
+  Future<void> play() async {
     if (_isDisposed) {
       return;
     }
-    value = value.copyWith(videoPlayerValue: videoPlayerController.value);
-  }
 
-  /// Starts playing the video.
-  Future<void> play() async {
-    if (value.isInitialized) {
-      setCanFirstPlay();
-
-      /// When there is an error in playing the video, it will be adjusted to
-      /// the corresponding progress during initialization.
-      if (value.position > Duration.zero) {
-        await seekTo(value.position);
-      }
-
-      await videoPlayerController.play();
-
-      _timer?.cancel();
-      _timer = Timer.periodic(const Duration(milliseconds: 500), (_) async {
-        if (_isDisposed) {
-          _timer?.cancel();
-          return;
-        }
-        value = value.copyWith(videoPlayerValue: videoPlayerController.value);
-
-        if (value.hasError || (value.isFinish && !value.isPlaying)) {
-          _timer?.cancel();
-          if (value.isMaxSpeed) {
-            await setPlaybackSpeed(speed: 1);
-          }
-
-          value = value.copyWith(
-            isMaxSpeed: false,
-            isVerticalDrag: false,
-            verticalDragValue: 0,
-            isDragProgress: false,
-            dragDuration: Duration.zero,
-          );
-        }
-
-        if (!value.hasError) {
-          value =
-              value.copyWith(position: videoPlayerController.value.position);
-        } else {
-          await initialize().then((_) => play());
-        }
-      });
+    if (!value.isInitialized) {
+      return;
     }
+
+    /// When there is an error in playing the video, it will be adjusted to
+    /// the corresponding progress during initialization.
+    if (value.position > Duration.zero) {
+      await seekTo(value.position);
+    }
+
+    await videoPlayerController.play();
+    value = value.copyWith(videoPlayerValue: videoPlayerController.value);
+
+    videoPlayerController.addListener(_listener);
   }
 
   /// Pauses the video.
   Future<void> pause() async {
-    if (value.isInitialized) {
-      _timer?.cancel();
-      await videoPlayerController.pause();
-      if (_isDisposed) {
-        return;
-      }
-      value = value.copyWith(videoPlayerValue: videoPlayerController.value);
+    if (_isDisposed) {
+      return;
     }
+
+    if (!value.isInitialized || !value.isPlaying) {
+      return;
+    }
+
+    await videoPlayerController.pause();
+    value = value.copyWith(videoPlayerValue: videoPlayerController.value);
+  }
+
+  /// Sets whether or not the video should loop after playing once.
+  Future<void> setLooping(bool looping) async {
+    if (_isDisposed) {
+      return;
+    }
+
+    await videoPlayerController.setLooping(looping);
+    value = value.copyWith(videoPlayerValue: videoPlayerController.value);
+  }
+
+  /// Sets the audio volume of video.
+  Future<void> setVolume(double volume) async {
+    if (_isDisposed) {
+      return;
+    }
+
+    await videoPlayerController.setVolume(volume);
+    value = value.copyWith(videoPlayerValue: videoPlayerController.value);
   }
 
   /// Sets the video's current timestamp to be at [moment].
@@ -368,133 +302,133 @@ class VideoViewController extends ValueNotifier<VideoViewValue> {
       return;
     }
 
-    await videoPlayerController.seekTo(moment);
     if (_isDisposed) {
       return;
     }
+
+    await videoPlayerController.seekTo(moment);
     value = value.copyWith(
       videoPlayerValue: videoPlayerController.value,
       position: videoPlayerController.value.position,
     );
   }
 
-  /// Sets the audio volume of video.
-  Future<void> setVolume(double volume) async {
-    await videoPlayerController.setVolume(volume);
-    if (_isDisposed) {
-      return;
-    }
-    value = value.copyWith(videoPlayerValue: videoPlayerController.value);
-  }
-
   /// Sets the playback speed of video.
   ///
   /// Defaults to maximum speed.
   Future<void> setPlaybackSpeed({double? speed}) async {
-    await videoPlayerController.setPlaybackSpeed(speed ?? maxSpeed);
     if (_isDisposed) {
       return;
     }
+
+    await videoPlayerController.setPlaybackSpeed(speed ?? maxPlaybackSpeed);
     value = value.copyWith(videoPlayerValue: videoPlayerController.value);
   }
 
   /// Set the explicit and implicit of the controller.
-  void setVisible({required bool isVisible}) {
+  void setVisible(bool isVisible) {
     if (_isDisposed) {
       return;
     }
+
     value = value.copyWith(isVisible: isVisible);
   }
 
   /// Sets whether the controller is locked.
-  void setLock({required bool isLock}) {
+  void setLock(bool isLock) {
     if (_isDisposed) {
       return;
     }
+
     value = value.copyWith(isLock: isLock);
   }
 
   /// Set whether to turn on the maximum speed playback.
-  void setMaxSpeed({required bool isMaxSpeed}) {
+  void setMaxPlaybackSpeed(bool isMaxPlaybackSpeed) {
     if (_isDisposed) {
       return;
     }
-    value = value.copyWith(isMaxSpeed: isMaxSpeed);
+
+    value = value.copyWith(isMaxPlaybackSpeed: isMaxPlaybackSpeed);
   }
 
   /// Set whether to display the adjustment progress of brightness or volume.
-  void setVerticalDrag({required bool isVerticalDrag}) {
+  void setVerticalDrag(bool isVerticalDrag) {
     if (_isDisposed) {
       return;
     }
+
     value = value.copyWith(isVerticalDrag: isVerticalDrag);
   }
 
   /// Sets the type of adjustment.
-  void setVerticalDragType({VerticalDragType? verticalDragType}) {
+  void setVerticalDragType(VerticalDragType? verticalDragType) {
     if (_isDisposed) {
       return;
     }
+
     value = value.copyWith(verticalDragType: verticalDragType);
   }
 
   /// Sets the current value (brightness or volume).
-  void setVerticalDragValue({required double verticalDragValue}) {
+  void setVerticalDragValue(double verticalDragValue) {
     if (_isDisposed) {
       return;
     }
+
     value = value.copyWith(verticalDragValue: verticalDragValue);
   }
 
   /// Set whether the progress can be adjusted.
-  void setDragProgress({required bool isDragProgress}) {
+  void setDragProgress(bool isDragProgress) {
     if (_isDisposed) {
       return;
     }
+
     value = value.copyWith(isDragProgress: isDragProgress);
   }
 
   /// Sets the duration of the slide.
   void setDragDuration(Duration duration) {
+    if (_isDisposed) {
+      return;
+    }
+
     if (duration < Duration.zero) {
       duration = Duration.zero;
     } else if (duration > value.duration) {
       duration = value.duration;
     }
-    if (_isDisposed) {
-      return;
-    }
     value = value.copyWith(dragDuration: duration);
   }
 
-  /// Maximum playback speed.
-  double get maxSpeed =>
-      defaultTargetPlatform == TargetPlatform.iOS ? 2.0 : 3.0;
+  /// Monitor fullscreen status changes.
+  StreamController<bool>? fullScreenStream;
 
   /// Set whether the screen is full.
-  void setFullScreen({required bool isFullScreen, bool isFire = true}) {
+  void setFullScreen(bool isFullScreen, {bool isFire = true}) {
     if (_isDisposed) {
       return;
     }
+
     if (value.isFullScreen != isFullScreen) {
       value = value.copyWith(isFullScreen: isFullScreen);
       if (isFire) {
-        EventBusUtil.fireFullScreen(isFullScreen: value.isFullScreen);
+        fullScreenStream?.add(value.isFullScreen);
       }
     }
-  }
-
-  /// Set whether to play for the first time.
-  void setCanFirstPlay() {
-    value = value.copyWith(canFirstPlay: false);
   }
 
   /// Enter full-screen mode.
   @protected
   void enterFullScreen() {
+    if (!config.allowedScreenSleep) {
+      Wakelock.enable();
+    }
+
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,
-      overlays: config.systemOverlaysEnterFullScreen ?? <SystemUiOverlay>[],
+      overlays: <SystemUiOverlay>[],
     );
     SystemChrome.setPreferredOrientations(value.orientations);
   }
@@ -502,8 +436,11 @@ class VideoViewController extends ValueNotifier<VideoViewValue> {
   /// Exit full-screen mode.
   @protected
   void exitFullScreen() {
-    setFullScreen(isFullScreen: false, isFire: false);
-    setLock(isLock: false);
+    Wakelock.disable();
+
+    setFullScreen(false, isFire: false);
+    setLock(false);
+
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,
       overlays: config.systemOverlaysExitFullScreen,
@@ -513,12 +450,43 @@ class VideoViewController extends ValueNotifier<VideoViewValue> {
     );
   }
 
-  Future<void> _fullScreenListener() async {
+  /// Monitoring of video playback.
+  void _listener() {
+    if (_isDisposed) {
+      return;
+    }
+
+    value = value.copyWith(videoPlayerValue: videoPlayerController.value);
+
+    if (value.hasError || (value.isFinish && !value.isPlaying)) {
+      if (value.isMaxPlaybackSpeed) {
+        setPlaybackSpeed(speed: 1);
+      }
+
+      value = value.copyWith(
+        isMaxPlaybackSpeed: false,
+        isVerticalDrag: false,
+        verticalDragValue: 0,
+        isDragProgress: false,
+        dragDuration: Duration.zero,
+      );
+    }
+
+    if (!value.hasError) {
+      value = value.copyWith(position: videoPlayerController.value.position);
+    }
+  }
+
+  void _fullScreenListener() {
     if (value.isPlaying && !value.isFullScreen) {
-      setFullScreen(isFullScreen: true);
+      setFullScreen(true);
       videoPlayerController.removeListener(_fullScreenListener);
     }
   }
+
+  /// Maximum playback speed.
+  double get maxPlaybackSpeed =>
+      defaultTargetPlatform == TargetPlatform.iOS ? 2.0 : 3.0;
 
   @override
   void dispose() {
@@ -529,15 +497,17 @@ class VideoViewController extends ValueNotifier<VideoViewValue> {
     if (!_beforeEnableWakelock) {
       Wakelock.disable();
     }
-    videoPlayerController.dispose();
-    _timer?.cancel();
+    videoPlayerController
+      ..removeListener(_listener)
+      ..dispose();
+    fullScreenStream?.close();
     _isDisposed = true;
 
     super.dispose();
   }
 
   /// Config.
-  VideoViewConfig get config => value.videoViewConfig;
+  VideoConfig get config => value.config;
 }
 
 /// The duration, current position, buffering state, error state and settings
@@ -545,22 +515,21 @@ class VideoViewController extends ValueNotifier<VideoViewValue> {
 ///
 /// The isVisible, isLock, isMaxSpeed, isVerticalDrag, verticalDragType,
 /// currentVerticalDragValue, isDragProgress, dragDuration of a
-/// [VideoViewControls].
-class VideoViewValue {
+/// [VideoControls].
+class VideoValue {
   /// Constructs a video with the given values. Only [videoPlayerValue] is
   /// required. The rest will initialize with default values when unset.
-  VideoViewValue({
+  VideoValue({
     required this.videoPlayerValue,
-    required this.videoViewConfig,
-    this.videoInitState = VideoInitState.none,
+    required this.config,
+    this.status = VideoInitStatus.none,
     this.aspectRatio = 1.0,
     this.duration = Duration.zero,
     this.position = Duration.zero,
-    this.canFirstPlay = true,
     this.isFullScreen = false,
     this.isVisible = false,
     this.isLock = false,
-    this.isMaxSpeed = false,
+    this.isMaxPlaybackSpeed = false,
     this.isVerticalDrag = false,
     this.verticalDragType,
     this.verticalDragValue = 0,
@@ -573,10 +542,10 @@ class VideoViewValue {
   final VideoPlayerValue videoPlayerValue;
 
   /// The config of [VideoView].
-  final VideoViewConfig videoViewConfig;
+  final VideoConfig config;
 
-  /// The current initialization state of the video.
-  VideoInitState videoInitState;
+  /// The current initialization status of the video.
+  final VideoInitStatus status;
 
   /// The parameters set by the developer are preferred.
   final double aspectRatio;
@@ -589,20 +558,17 @@ class VideoViewValue {
   /// The current playback position.
   final Duration position;
 
-  /// Whether it is playing for the first time.
-  final bool canFirstPlay;
-
   /// Whether it is full screen mode.
   final bool isFullScreen;
 
-  /// Show or hide [VideoViewControls].
+  /// Show or hide [VideoControls].
   final bool isVisible;
 
   /// Whether to lock the controller
   final bool isLock;
 
   /// Whether to play video at the maximum rate.
-  final bool isMaxSpeed;
+  final bool isMaxPlaybackSpeed;
 
   /// Whether to display the adjustment progress of brightness or volume.
   final bool isVerticalDrag;
@@ -680,8 +646,8 @@ class VideoViewValue {
 
   /// Device orientation after full screen.
   List<DeviceOrientation> get orientations {
-    if (videoViewConfig.deviceOrientationsEnterFullScreen != null) {
-      return videoViewConfig.deviceOrientationsEnterFullScreen!;
+    if (config.deviceOrientationsEnterFullScreen != null) {
+      return config.deviceOrientationsEnterFullScreen!;
     } else if (size.width > size.height) {
       return <DeviceOrientation>[
         DeviceOrientation.landscapeLeft,
@@ -714,36 +680,34 @@ class VideoViewValue {
 
   /// Returns a new instance that has the same values as this current instance,
   /// except for any overrides passed in as arguments to [copyWith].
-  VideoViewValue copyWith({
+  VideoValue copyWith({
     VideoPlayerValue? videoPlayerValue,
-    VideoViewConfig? videoViewConfig,
-    VideoInitState? videoInitState,
+    VideoConfig? config,
+    VideoInitStatus? status,
     double? aspectRatio,
     Duration? duration,
     Duration? position,
-    bool? canFirstPlay,
     bool? isFullScreen,
     bool? isVisible,
     bool? isLock,
-    bool? isMaxSpeed,
+    bool? isMaxPlaybackSpeed,
     bool? isVerticalDrag,
     VerticalDragType? verticalDragType,
     double? verticalDragValue,
     bool? isDragProgress,
     Duration? dragDuration,
   }) {
-    return VideoViewValue(
+    return VideoValue(
       videoPlayerValue: videoPlayerValue ?? this.videoPlayerValue,
-      videoViewConfig: videoViewConfig ?? this.videoViewConfig,
-      videoInitState: videoInitState ?? this.videoInitState,
+      config: config ?? this.config,
+      status: status ?? this.status,
       aspectRatio: aspectRatio ?? this.aspectRatio,
       duration: duration ?? this.duration,
       position: position ?? this.position,
-      canFirstPlay: canFirstPlay ?? this.canFirstPlay,
       isFullScreen: isFullScreen ?? this.isFullScreen,
       isVisible: isVisible ?? this.isVisible,
       isLock: isLock ?? this.isLock,
-      isMaxSpeed: isMaxSpeed ?? this.isMaxSpeed,
+      isMaxPlaybackSpeed: isMaxPlaybackSpeed ?? this.isMaxPlaybackSpeed,
       isVerticalDrag: isVerticalDrag ?? this.isVerticalDrag,
       verticalDragType: verticalDragType ?? this.verticalDragType,
       verticalDragValue: verticalDragValue ?? this.verticalDragValue,
@@ -753,28 +717,20 @@ class VideoViewValue {
   }
 }
 
-// ignore: public_member_api_docs
-typedef VideoViewRoutePageBuilder = Widget Function(
-  BuildContext context,
-  Animation<double> animation,
-  Animation<double> secondaryAnimation,
-  VideoViewControllerInherited controllerProvider,
-);
-
-// ignore: public_member_api_docs
-class VideoViewControllerInherited extends InheritedWidget {
+/// The widget used to pass [VideoController].
+class VideoControllerInherited extends InheritedWidget {
   // ignore: public_member_api_docs
-  const VideoViewControllerInherited({
+  const VideoControllerInherited({
     Key? key,
     required this.controller,
     required Widget child,
   }) : super(key: key, child: child);
 
-  // ignore: public_member_api_docs
-  final VideoViewController controller;
+  /// The controller of [VideoView].
+  final VideoController controller;
 
   @override
-  bool updateShouldNotify(covariant VideoViewControllerInherited oldWidget) =>
+  bool updateShouldNotify(covariant VideoControllerInherited oldWidget) =>
       controller != oldWidget.controller;
 }
 
@@ -782,23 +738,39 @@ class VideoViewControllerInherited extends InheritedWidget {
 enum VerticalDragType {
   // ignore: public_member_api_docs
   brightness,
+
   // ignore: public_member_api_docs
   volume,
 }
 
 /// Initialization status of video.
-enum VideoInitState {
+enum VideoInitStatus {
   /// Waiting for initialization.
   none,
 
   /// Initializing.
-  initializing,
+  loading,
 
   /// Initialization successful.
   success,
 
   /// Initialization failed.
   fail,
+}
+
+/// Extension of [VideoInitStatus].
+extension VideoInitStatusExtension on VideoInitStatus {
+  /// Whether the status is "successful".
+  bool get isNone => this == VideoInitStatus.none;
+
+  /// Whether the status is "failed".
+  bool get isLoading => this == VideoInitStatus.loading;
+
+  /// Whether the status is "successful".
+  bool get isSuccess => this == VideoInitStatus.success;
+
+  /// Whether the status is "failed".
+  bool get isFail => this == VideoInitStatus.fail;
 }
 
 /// Position of text for video progress

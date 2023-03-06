@@ -52,7 +52,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String url =
-      'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4';
+      'https://assets.mixkit.co/videos/preview/mixkit-spinning-around-the-earth-29351-large.mp4';
 
   @override
   Widget build(BuildContext context) {
