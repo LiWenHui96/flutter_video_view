@@ -37,7 +37,12 @@ class _VideoControlsState extends BaseVideoControls<VideoControls> {
       children: <Widget>[
         if (!value.isLock)
           ControlsTop(backButton: kBackButton(), defaultStyle: defaultStyle),
-        const Spacer(),
+        Expanded(
+          child: GestureDetector(
+            onLongPressStart: _onLongPressStart,
+            onLongPressEnd: _onLongPressEnd,
+          ),
+        ),
         if (!value.isLock && value.status.isSuccess) const ControlsBottom(),
       ],
     );
@@ -53,20 +58,15 @@ class _VideoControlsState extends BaseVideoControls<VideoControls> {
       ],
     );
 
-    child = AbsorbPointer(
-      absorbing: !value.isVisible,
-      child: AnimatedOpacity(
-        opacity: value.isVisible ? 1 : .0,
-        duration: defaultDuration,
-        child: child,
-      ),
+    child = AnimatedOpacity(
+      opacity: value.isVisible ? 1 : .0,
+      duration: defaultDuration,
+      child: child,
     );
 
     child = GestureDetector(
       onTap: showOrHide,
       onDoubleTap: playOrPause,
-      onLongPressStart: _onLongPressStart,
-      onLongPressEnd: _onLongPressEnd,
       onVerticalDragStart: _onVerticalDragStart,
       onVerticalDragUpdate: _onVerticalDragUpdate,
       onVerticalDragEnd: _onVerticalDragEnd,
@@ -82,7 +82,10 @@ class _VideoControlsState extends BaseVideoControls<VideoControls> {
 
   /// PlayButton
   Widget _buildPlayButtonWidget() {
-    if (!value.status.isSuccess) {
+    if (!value.status.isSuccess ||
+        value.isDragProgress ||
+        value.isVerticalDrag ||
+        value.isLock) {
       return const SizedBox.shrink();
     }
 
@@ -192,8 +195,8 @@ class _VideoControlsState extends BaseVideoControls<VideoControls> {
   }
 
   void _onLongPressStart(LongPressStartDetails details) {
-    if (config.canLongPress &&
-        canUse &&
+    if (canUse &&
+        config.canLongPress &&
         value.isPlaying &&
         value.playbackSpeed < controller.maxPlaybackSpeed) {
       showOrHide(visible: false);
@@ -213,7 +216,7 @@ class _VideoControlsState extends BaseVideoControls<VideoControls> {
   }
 
   Future<void> _onVerticalDragStart(DragStartDetails details) async {
-    if (config.canChangeVolumeOrBrightness && canUse) {
+    if (canUse && config.canChangeVolumeOrBrightness) {
       controller
         ..setVerticalDrag(true)
         ..setVerticalDragType(
@@ -253,7 +256,7 @@ class _VideoControlsState extends BaseVideoControls<VideoControls> {
   }
 
   void _onHorizontalDragStart(DragStartDetails details) {
-    if (config.canChangeProgress && canUse) {
+    if (canUse && config.canChangeProgress) {
       controller
         ..setDragProgress(true)
         ..setDragDuration(value.position);

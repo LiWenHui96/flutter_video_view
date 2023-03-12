@@ -60,7 +60,7 @@ class ControlsCenter extends StatelessWidget {
       return Column(mainAxisSize: MainAxisSize.min, children: children);
     }
 
-    final Widget child = Row(
+    Widget child = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
         _actions(
@@ -75,9 +75,11 @@ class ControlsCenter extends StatelessWidget {
       ],
     );
 
-    return Padding(
+    child = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: SafeArea(top: false, bottom: false, child: child),
     );
+
+    return AbsorbPointer(absorbing: !value.isVisible, child: child);
   }
 }

@@ -45,7 +45,7 @@ class _ControlsBottomState extends BaseVideoControls<ControlsBottom> {
       child: child ?? Row(children: <Widget>[a, Expanded(child: b), d]),
     );
 
-    return Container(
+    child = Container(
       padding: const EdgeInsets.only(top: 5),
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -56,6 +56,8 @@ class _ControlsBottomState extends BaseVideoControls<ControlsBottom> {
       ),
       child: child,
     );
+
+    return AbsorbPointer(absorbing: !value.isVisible, child: child);
   }
 
   Widget _buildMuteButton() {

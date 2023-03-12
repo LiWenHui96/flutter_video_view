@@ -57,7 +57,7 @@ class ControlsTop extends StatelessWidget {
       child: child,
     );
 
-    return Container(
+    child = Container(
       padding: const EdgeInsets.only(bottom: 5),
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -68,5 +68,7 @@ class ControlsTop extends StatelessWidget {
       ),
       child: child,
     );
+
+    return AbsorbPointer(absorbing: !value.isVisible, child: child);
   }
 }
