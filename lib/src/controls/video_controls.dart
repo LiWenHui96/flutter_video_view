@@ -37,66 +37,9 @@ class _VideoControlsState extends BaseVideoControls<VideoControls> {
 
     Widget child = Column(
       children: <Widget>[
-        if (!value.isLock)
-          ControlsTop(backButton: kBackButton(), defaultStyle: defaultStyle),
-        Expanded(
-          child: GestureDetector(
-            onLongPressStart: _onLongPressStart,
-            onLongPressEnd: _onLongPressEnd,
-          ),
-        ),
-        if (!value.isLock && value.status.isSuccess)
-          ControlsBottom(
-            onPlayOrPause: playOrPause,
-            onMute: () {
-              if (canUse) {
-                if (value.volume == 0) {
-                  controller.setVolume(_lastVolume ?? .5);
-                } else {
-                  _lastVolume = value.volume;
-                  controller.setVolume(0);
-                }
-
-                showOrHide(visible: true);
-              }
-            },
-            onFullScreen: () {
-              if (canUse) {
-                controller.setFullScreen(!value.isFullScreen);
-
-                Future<void>.delayed(
-                  defaultDuration,
-                  () => showOrHide(visible: true),
-                );
-              }
-            },
-            onDragStart: (DragStartDetails details) {
-              if (canUse) {
-                controller.setDragProgress(true);
-              }
-            },
-            onDragUpdate: (double relative) {
-              if (canUse && value.isDragProgress) {
-                controller.setDragDuration(value.duration * relative);
-                showOrHide(visible: true, startTimer: false);
-              }
-            },
-            onDragEnd: (DragEndDetails details) {
-              if (value.isDragProgress) {
-                controller
-                  ..setDragProgress(false)
-                  ..seekTo(value.dragDuration);
-                showOrHide(visible: true);
-              }
-            },
-            onTapUp: (double relative) {
-              if (canUse) {
-                controller
-                  ..setDragDuration(value.duration * relative)
-                  ..seekTo(value.dragDuration);
-              }
-            },
-          ),
+        if (!value.isLock) _buildTopControls(),
+        Expanded(child: _buildLongPress()),
+        if (!value.isLock && value.status.isSuccess) _buildBottomControls(),
       ],
     );
 
@@ -186,6 +129,74 @@ class _VideoControlsState extends BaseVideoControls<VideoControls> {
     );
 
     return config.finishBuilder?.call(context, value.isFullScreen) ?? child;
+  }
+
+  /// Top action bar
+  Widget _buildTopControls() {
+    return ControlsTop(backButton: kBackButton(), defaultStyle: defaultStyle);
+  }
+
+  /// Function area for long press operation.
+  Widget _buildLongPress() {
+    return GestureDetector(
+      onLongPressStart: _onLongPressStart,
+      onLongPressEnd: _onLongPressEnd,
+    );
+  }
+
+  /// Bottom action bar
+  Widget _buildBottomControls() {
+    return ControlsBottom(
+      onPlayOrPause: playOrPause,
+      onMute: () {
+        if (canUse) {
+          if (value.volume == 0) {
+            controller.setVolume(_lastVolume ?? .5);
+          } else {
+            _lastVolume = value.volume;
+            controller.setVolume(0);
+          }
+
+          showOrHide(visible: true);
+        }
+      },
+      onFullScreen: () {
+        if (canUse) {
+          controller.setFullScreen(!value.isFullScreen);
+
+          Future<void>.delayed(
+            defaultDuration,
+            () => showOrHide(visible: true),
+          );
+        }
+      },
+      onDragStart: (DragStartDetails details) {
+        if (canUse) {
+          controller.setDragProgress(true);
+        }
+      },
+      onDragUpdate: (double relative) {
+        if (canUse && value.isDragProgress) {
+          controller.setDragDuration(value.duration * relative);
+          showOrHide(visible: true, startTimer: false);
+        }
+      },
+      onDragEnd: (DragEndDetails details) {
+        if (value.isDragProgress) {
+          controller
+            ..setDragProgress(false)
+            ..seekTo(value.dragDuration);
+          showOrHide(visible: true);
+        }
+      },
+      onTapUp: (double relative) {
+        if (canUse) {
+          controller
+            ..setDragDuration(value.duration * relative)
+            ..seekTo(value.dragDuration);
+        }
+      },
+    );
   }
 
   @override
