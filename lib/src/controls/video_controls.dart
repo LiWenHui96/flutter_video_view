@@ -23,6 +23,8 @@ class VideoControls extends StatefulWidget {
 }
 
 class _VideoControlsState extends BaseVideoControls<VideoControls> {
+  double? _lastVolume;
+
   @override
   Widget build(BuildContext context) {
     if (config.showBuffering && !value.isFinish && value.isBuffering) {
@@ -43,7 +45,58 @@ class _VideoControlsState extends BaseVideoControls<VideoControls> {
             onLongPressEnd: _onLongPressEnd,
           ),
         ),
-        if (!value.isLock && value.status.isSuccess) const ControlsBottom(),
+        if (!value.isLock && value.status.isSuccess)
+          ControlsBottom(
+            onPlayOrPause: playOrPause,
+            onMute: () {
+              if (canUse) {
+                if (value.volume == 0) {
+                  controller.setVolume(_lastVolume ?? .5);
+                } else {
+                  _lastVolume = value.volume;
+                  controller.setVolume(0);
+                }
+
+                showOrHide(visible: true);
+              }
+            },
+            onFullScreen: () {
+              if (canUse) {
+                controller.setFullScreen(!value.isFullScreen);
+
+                Future<void>.delayed(
+                  defaultDuration,
+                  () => showOrHide(visible: true),
+                );
+              }
+            },
+            onDragStart: (DragStartDetails details) {
+              if (canUse) {
+                controller.setDragProgress(true);
+              }
+            },
+            onDragUpdate: (double relative) {
+              if (canUse && value.isDragProgress) {
+                controller.setDragDuration(value.duration * relative);
+                showOrHide(visible: true, startTimer: false);
+              }
+            },
+            onDragEnd: (DragEndDetails details) {
+              if (value.isDragProgress) {
+                controller
+                  ..setDragProgress(false)
+                  ..seekTo(value.dragDuration);
+                showOrHide(visible: true);
+              }
+            },
+            onTapUp: (double relative) {
+              if (canUse) {
+                controller
+                  ..setDragDuration(value.duration * relative)
+                  ..seekTo(value.dragDuration);
+              }
+            },
+          ),
       ],
     );
 

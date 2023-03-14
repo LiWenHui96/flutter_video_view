@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_video_view/src/video_config.dart';
 import 'package:flutter_video_view/src/video_view.dart';
 import 'package:flutter_video_view/src/widgets/widgets.dart';
 import 'package:video_player/video_player.dart';
@@ -10,31 +11,72 @@ import 'base_controls.dart';
 /// @Author: LiWeNHuI
 /// @Date: 2023/3/5
 
-class ControlsBottom extends StatefulWidget {
+class ControlsBottom extends StatelessWidget {
   // ignore: public_member_api_docs
-  const ControlsBottom({Key? key}) : super(key: key);
+  const ControlsBottom({
+    Key? key,
+    required this.onPlayOrPause,
+    required this.onMute,
+    required this.onFullScreen,
+    required this.onDragStart,
+    required this.onDragUpdate,
+    required this.onDragEnd,
+    required this.onTapUp,
+  }) : super(key: key);
 
-  @override
-  State<ControlsBottom> createState() => _ControlsBottomState();
-}
+  /// Play or pause video.
+  final VoidCallback? onPlayOrPause;
 
-class _ControlsBottomState extends BaseVideoControls<ControlsBottom> {
-  double? _lastVolume;
+  /// Mute the video.
+  final VoidCallback? onMute;
+
+  /// Enable/disable full screen mode.
+  final VoidCallback? onFullScreen;
+
+  /// Start the progress adjustment operation.
+  final GestureDragStartCallback onDragStart;
+
+  /// Progress in adjustment.
+  final ValueChanged<double> onDragUpdate;
+
+  /// End the operation of progress adjustment.
+  final GestureDragEndCallback onDragEnd;
+
+  /// Click to adjust the video's progress.
+  final ValueChanged<double> onTapUp;
 
   @override
   Widget build(BuildContext context) {
+    final VideoController controller = VideoController.of(context);
+    final VideoValue value = controller.value;
+    final VideoConfig config = controller.config;
+
+    final TextStyle style =
+        TextStyle(fontSize: config.textSize, color: config.foregroundColor);
+    final VideoTextPosition textPosition =
+        config.textPosition?.call(value.isFullScreen) ?? VideoTextPosition.ltl;
+
     final Widget a = AnimatedPlayPause(
       isPlaying: value.isPlaying,
       duration: defaultDuration,
       color: config.foregroundColor,
-      onPressed: playOrPause,
+      onPressed: onPlayOrPause,
     );
 
-    final Widget b = _buildProgressBar();
+    final Widget b = _buildProgressBar(
+      value,
+      config,
+      textPosition,
+      style,
+      onDragStart,
+      onDragUpdate,
+      onDragEnd,
+      onTapUp,
+    );
 
-    final Widget c = _buildMuteButton();
+    final Widget c = _buildMuteButton(value, config);
 
-    final Widget d = _buildFullScreenButton();
+    final Widget d = _buildFullScreenButton(value, config);
 
     Widget? child =
         config.bottomBuilder?.call(context, value.isFullScreen, a, b, c, d);
@@ -60,85 +102,73 @@ class _ControlsBottomState extends BaseVideoControls<ControlsBottom> {
     return AbsorbPointer(absorbing: !value.isVisible, child: child);
   }
 
-  Widget _buildMuteButton() {
+  Widget _buildMuteButton(VideoValue value, VideoConfig config) {
     return _AnimatedMute(
       isMute: value.volume == 0,
       duration: defaultDuration,
       color: config.foregroundColor,
-      onPressed: () {
-        if (canUse) {
-          if (value.volume == 0) {
-            controller.setVolume(_lastVolume ?? .5);
-          } else {
-            _lastVolume = value.volume;
-            controller.setVolume(0);
-          }
-
-          showOrHide(visible: true);
-        }
-      },
+      onPressed: onMute,
     );
   }
 
-  Widget _buildFullScreenButton() {
+  Widget _buildFullScreenButton(VideoValue value, VideoConfig config) {
     return _AnimatedFullscreen(
       isFullscreen: value.isFullScreen,
       duration: defaultDuration,
       color: config.foregroundColor,
-      onPressed: () {
-        if (canUse) {
-          controller.setFullScreen(!value.isFullScreen);
-
-          Future<void>.delayed(
-            defaultDuration,
-            () => showOrHide(visible: true),
-          );
-        }
-      },
+      onPressed: onFullScreen,
     );
   }
 
-  Widget _buildProgressBar() {
-    return Row(children: _buildChildren());
-  }
+  Widget _buildProgressBar(
+    VideoValue value,
+    VideoConfig config,
+    VideoTextPosition textPosition,
+    TextStyle style,
+    GestureDragStartCallback onDragStart,
+    ValueChanged<double> onDragUpdate,
+    GestureDragEndCallback onDragEnd,
+    ValueChanged<double> onTapUp,
+  ) {
+    final SizedBox divider =
+        SizedBox(width: config.progressBarGap?.call(value.isFullScreen) ?? 10);
 
-  List<Widget> _buildChildren() {
-    switch (textPosition) {
-      case VideoTextPosition.ltl:
-        return <Widget>[
-          _buildPosition(),
-          _buildDuration(),
-          divider,
-          _buildProgress(),
-        ];
-      case VideoTextPosition.rtr:
-        return <Widget>[
-          _buildProgress(),
-          divider,
-          _buildPosition(),
-          _buildDuration(),
-        ];
-      case VideoTextPosition.ltr:
-        return <Widget>[
-          _buildPosition(),
-          divider,
-          _buildProgress(),
-          divider,
-          _buildDuration(),
-        ];
-      case VideoTextPosition.none:
-        return <Widget>[];
+    final Widget position = _buildPosition(value, config, style);
+
+    final Widget duration = _buildDuration(value, config, textPosition, style);
+
+    final Widget progress = _buildProgress(
+      value,
+      config,
+      onDragStart,
+      onDragUpdate,
+      onDragEnd,
+      onTapUp,
+    );
+
+    List<Widget>? children;
+
+    if (textPosition == VideoTextPosition.ltl) {
+      children = <Widget>[position, duration, divider, progress];
+    } else if (textPosition == VideoTextPosition.rtr) {
+      children = <Widget>[progress, divider, position, duration];
+    } else if (textPosition == VideoTextPosition.ltr) {
+      children = <Widget>[position, divider, progress, divider, duration];
     }
+
+    return Row(children: children ?? <Widget>[]);
   }
 
-  SizedBox get divider =>
-      SizedBox(width: config.progressBarGap?.call(value.isFullScreen) ?? 10);
-
-  Widget _buildPosition() {
-    return Text(formatDuration(value.position), style: defaultStyle);
+  Widget _buildPosition(VideoValue value, VideoConfig config, TextStyle style) {
+    return Text(formatDuration(value.position), style: style);
   }
 
-  Widget _buildDuration() {
+  Widget _buildDuration(
+    VideoValue value,
+    VideoConfig config,
+    VideoTextPosition textPosition,
+    TextStyle style,
+  ) {
     String text = formatDuration(value.duration);
 
     if (textPosition == VideoTextPosition.ltl ||
@@ -146,46 +176,28 @@ class _ControlsBottomState extends BaseVideoControls<ControlsBottom> {
       text = '/$text';
     }
 
-    return Text(text, style: defaultStyle);
+    return Text(text, style: style);
   }
 
-  Widget _buildProgress() {
+  Widget _buildProgress(
+    VideoValue value,
+    VideoConfig config,
+    GestureDragStartCallback onDragStart,
+    ValueChanged<double> onDragUpdate,
+    GestureDragEndCallback onDragEnd,
+    ValueChanged<double> onTapUp,
+  ) {
     final Widget child = _VideoProgressBar(
       colors: config.videoViewProgressColors,
       value: value,
-      onDragStart: (DragStartDetails details) {
-        if (canUse) {
-          controller.setDragProgress(true);
-        }
-      },
-      onDragUpdate: (double relative) {
-        if (canUse && value.isDragProgress) {
-          controller.setDragDuration(value.duration * relative);
-          showOrHide(visible: true, startTimer: false);
-        }
-      },
-      onDragEnd: (DragEndDetails details) {
-        if (value.isDragProgress) {
-          controller
-            ..setDragProgress(false)
-            ..seekTo(value.dragDuration);
-          showOrHide(visible: true);
-        }
-      },
-      onTapUp: (double relative) {
-        if (canUse) {
-          controller
-            ..setDragDuration(value.duration * relative)
-            ..seekTo(value.dragDuration);
-        }
-      },
+      onDragStart: onDragStart,
+      onDragUpdate: onDragUpdate,
+      onDragEnd: onDragEnd,
+      onTapUp: onTapUp,
     );
 
     return Expanded(child: SizedBox(height: 24, child: child));
   }
-
-  VideoTextPosition get textPosition =>
-      config.textPosition?.call(value.isFullScreen) ?? VideoTextPosition.ltl;
 }
 
 class _AnimatedMute extends StatelessWidget {
