@@ -85,6 +85,7 @@ abstract class BaseVideoControls<T extends StatefulWidget>
   @protected
   void showOrHide({bool? visible, bool startTimer = true}) {
     hideTimer?.cancel();
+    hideTimer = null;
 
     controller.setVisible(visible ?? !value.isVisible);
     if (value.isVisible && startTimer) {
