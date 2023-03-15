@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_video_view/src/controls/base_controls.dart';
 import 'package:flutter_video_view/src/utils/utils.dart';
 import 'package:flutter_video_view/src/video_view.dart';
 import 'package:flutter_video_view/src/video_view_localizations.dart';
 import 'package:flutter_video_view/src/widgets/widgets.dart';
 
-import 'base_controls.dart';
 import 'controls_bottom.dart';
 import 'controls_center.dart';
 import 'controls_top.dart';
@@ -14,15 +14,15 @@ import 'controls_top.dart';
 /// @Author: LiWeNHuI
 /// @Date: 2023/3/2
 
-class VideoControls extends StatefulWidget {
+class NormalVideoControls extends StatefulWidget {
   // ignore: public_member_api_docs
-  const VideoControls({Key? key}) : super(key: key);
+  const NormalVideoControls({Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _VideoControlsState();
+  State<StatefulWidget> createState() => _NormalVideoControlsState();
 }
 
-class _VideoControlsState extends BaseVideoControls<VideoControls> {
+class _NormalVideoControlsState extends BaseVideoControls<NormalVideoControls> {
   double? _lastVolume;
 
   @override

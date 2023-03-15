@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock/wakelock.dart';
 
-import 'controls/video_controls.dart';
 import 'utils/utils.dart';
 import 'video_body.dart';
 import 'video_config.dart';
@@ -541,8 +540,7 @@ class VideoController extends ValueNotifier<VideoValue> {
 /// of a [VideoPlayerController].
 ///
 /// The isVisible, isLock, isMaxSpeed, isVerticalDrag, verticalDragType,
-/// currentVerticalDragValue, isDragProgress, dragDuration of a
-/// [VideoControls].
+/// currentVerticalDragValue, isDragProgress, dragDuration of a VideoControls.
 class VideoValue {
   /// Constructs a video with the given values. Only [videoPlayerValue] is
   /// required. The rest will initialize with default values when unset.
@@ -589,7 +587,7 @@ class VideoValue {
   /// Whether it is full screen mode.
   final bool isFullScreen;
 
-  /// Show or hide [VideoControls].
+  /// Show or hide VideoControls.
   final bool isVisible;
 
   /// Whether to lock the controller

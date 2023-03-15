@@ -4,7 +4,7 @@ import 'package:flutter_video_view/src/video_view.dart';
 import 'package:flutter_video_view/src/widgets/widgets.dart';
 import 'package:video_player/video_player.dart';
 
-import 'base_controls.dart';
+import '../base_controls.dart';
 
 /// @Describe: Bottom action bar
 ///

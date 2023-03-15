@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
-import 'controls/video_controls.dart';
+import 'controls/base_controls.dart';
 import 'video_config.dart';
 import 'video_view.dart';
 import 'video_view_localizations.dart';
@@ -53,7 +53,7 @@ class VideoBody extends StatelessWidget {
             config.placeholderBuilder?.call(value.status) ?? placeholderChild,
           if (config.overlay != null) config.overlay!,
           if (config.showControls?.call(value.isFullScreen) ?? true)
-            const VideoControls(),
+            config.controlsType.child,
         ],
       ),
     );

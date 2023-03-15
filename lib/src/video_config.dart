@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_video_view/src/controls/base_controls.dart';
 
 import 'video_view.dart';
 
@@ -33,9 +34,6 @@ class VideoConfig {
     this.looping = false,
     this.overlay,
     this.placeholderBuilder,
-    this.showBuffering = true,
-    this.bufferingBuilder,
-    this.finishBuilder,
     this.fullScreenByDefault = false,
     this.useRootNavigator = true,
     this.deviceOrientationsEnterFullScreen,
@@ -44,6 +42,10 @@ class VideoConfig {
     this.showControlsOnInitialize = true,
     this.showControls,
     this.hideControlsTimer = const Duration(seconds: 3),
+    this.controlsType = ControlsType.normal,
+    this.showBuffering = true,
+    this.bufferingBuilder,
+    this.finishBuilder,
     this.controlsBackgroundColor = const <Color>[
       Color.fromRGBO(0, 0, 0, .7),
       Color.fromRGBO(0, 0, 0, .3),
@@ -175,17 +177,6 @@ class VideoConfig {
   /// Widgets in various initialized states.
   final PlaceholderBuilder? placeholderBuilder;
 
-  /// Whether to show placeholders in the buffer.
-  ///
-  /// Defaults to true.
-  final bool showBuffering;
-
-  /// Widget to display when buffered is overlaid above the video.
-  final Widget? bufferingBuilder;
-
-  /// Widget to display when video playback is complete.
-  final Widget Function(BuildContext context, bool isFullScreen)? finishBuilder;
-
   /// Whether to play full screen when auto play is enabled.
   /// Valid only if [autoPlay] is true.
   ///
@@ -220,6 +211,20 @@ class VideoConfig {
   ///
   /// Defaults to three seconds.
   final Duration hideControlsTimer;
+
+  /// Types of controls.
+  final ControlsType controlsType;
+
+  /// Whether to show placeholders in the buffer.
+  ///
+  /// Defaults to true.
+  final bool showBuffering;
+
+  /// Widget to display when buffered is overlaid above the video.
+  final Widget? bufferingBuilder;
+
+  /// Widget to display when video playback is complete.
+  final Widget Function(BuildContext context, bool isFullScreen)? finishBuilder;
 
   /// The background color of the controller.
   final List<Color> controlsBackgroundColor;

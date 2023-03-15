@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_video_view/src/controls/base_controls.dart';
 import 'package:flutter_video_view/src/video_config.dart';
 import 'package:flutter_video_view/src/video_view.dart';
 import 'package:flutter_video_view/src/widgets/widgets.dart';
-
-import 'base_controls.dart';
 
 /// @Describe: Center action bar
 ///
