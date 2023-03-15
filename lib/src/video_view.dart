@@ -463,22 +463,42 @@ class VideoController extends ValueNotifier<VideoValue> {
     value = value.copyWith(videoPlayerValue: videoPlayerController.value);
 
     if (value.hasError || (value.isFinish && !value.isPlaying)) {
-      if (value.isMaxPlaybackSpeed) {
-        setPlaybackSpeed(speed: 1);
-      }
-
-      value = value.copyWith(
-        isMaxPlaybackSpeed: false,
-        isVerticalDrag: false,
-        verticalDragValue: 0,
-        isDragProgress: false,
-        dragDuration: Duration.zero,
-      );
+      reset();
     }
 
     if (!value.hasError) {
       value = value.copyWith(position: videoPlayerController.value.position);
     }
+
+    if (maxPreviewTime != null) {
+      final int positionMicr = value.position.inMicroseconds;
+      final int maxPreviewTimeMicr = maxPreviewTime!.inMicroseconds;
+
+      if (positionMicr >= maxPreviewTimeMicr && !value.isMaxPreviewTime) {
+        value = value.copyWith(isMaxPreviewTime: true);
+        pause();
+        reset();
+      } else if (positionMicr < maxPreviewTimeMicr && value.isMaxPreviewTime) {
+        value = value.copyWith(isMaxPreviewTime: false);
+        play();
+      }
+    }
+  }
+
+  /// Reset properties, including isMaxPlaybackSpeed, isVerticalDrag,
+  /// verticalDragValue, isDragProgress, dragDuration, etc.
+  void reset() {
+    if (value.isMaxPlaybackSpeed) {
+      setPlaybackSpeed(speed: 1);
+    }
+
+    value = value.copyWith(
+      isMaxPlaybackSpeed: false,
+      isVerticalDrag: false,
+      verticalDragValue: 0,
+      isDragProgress: false,
+      dragDuration: Duration.zero,
+    );
   }
 
   void _fullScreenListener() {
@@ -491,6 +511,9 @@ class VideoController extends ValueNotifier<VideoValue> {
   /// Maximum playback speed.
   double get maxPlaybackSpeed =>
       defaultTargetPlatform == TargetPlatform.iOS ? 2.0 : 3.0;
+
+  /// Maximum preview duration.
+  Duration? get maxPreviewTime => config.maxPreviewTime;
 
   @override
   void dispose() {
@@ -539,6 +562,7 @@ class VideoValue {
     this.verticalDragValue = 0,
     this.isDragProgress = false,
     this.dragDuration = Duration.zero,
+    this.isMaxPreviewTime = false,
   });
 
   /// The duration, current position, buffering state, error state and settings
@@ -588,6 +612,9 @@ class VideoValue {
 
   /// Adjusted progress value.
   final Duration dragDuration;
+
+  /// Whether or not the maximum preview duration has been reached.
+  final bool isMaxPreviewTime;
 
   /// Indicates whether or not the video has been loaded and is ready to play.
   bool get isInitialized => videoPlayerValue.isInitialized;
@@ -700,6 +727,7 @@ class VideoValue {
     double? verticalDragValue,
     bool? isDragProgress,
     Duration? dragDuration,
+    bool? isMaxPreviewTime,
   }) {
     return VideoValue(
       videoPlayerValue: videoPlayerValue ?? this.videoPlayerValue,
@@ -717,6 +745,7 @@ class VideoValue {
       verticalDragValue: verticalDragValue ?? this.verticalDragValue,
       isDragProgress: isDragProgress ?? this.isDragProgress,
       dragDuration: dragDuration ?? this.dragDuration,
+      isMaxPreviewTime: isMaxPreviewTime ?? this.isMaxPreviewTime,
     );
   }
 }

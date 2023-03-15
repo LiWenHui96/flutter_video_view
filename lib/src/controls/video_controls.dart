@@ -27,12 +27,12 @@ class _VideoControlsState extends BaseVideoControls<VideoControls> {
 
   @override
   Widget build(BuildContext context) {
-    if (config.showBuffering && !value.isFinish && value.isBuffering) {
-      return config.bufferingBuilder ?? const CircularProgressIndicator();
-    }
-
     if (value.isFinish) {
       return _buildFinishWidget();
+    }
+
+    if (value.isMaxPreviewTime) {
+      return _buildMaxPreviewWidget();
     }
 
     Widget child = Column(
@@ -51,6 +51,8 @@ class _VideoControlsState extends BaseVideoControls<VideoControls> {
           ControlsCenter(onHideControls: () => showOrHide(visible: true)),
         if (config.showCenterPlay && !value.isPlaying && !value.isBuffering)
           _buildPlayButtonWidget(),
+        if (config.showBuffering && !value.isFinish && value.isBuffering)
+          config.bufferingBuilder ?? const CircularProgressIndicator(),
       ],
     );
 
@@ -129,6 +131,21 @@ class _VideoControlsState extends BaseVideoControls<VideoControls> {
     );
 
     return config.finishBuilder?.call(context, value.isFullScreen) ?? child;
+  }
+
+  Widget _buildMaxPreviewWidget() {
+    final Widget child = Container(
+      alignment: Alignment.topLeft,
+      color: Colors.black,
+      child: SafeArea(
+        top: value.isPortrait && value.isFullScreen,
+        bottom: false,
+        child: kBackButton(),
+      ),
+    );
+
+    return config.maxPreviewTimeBuilder?.call(context, value.isFullScreen) ??
+        child;
   }
 
   /// Top action bar

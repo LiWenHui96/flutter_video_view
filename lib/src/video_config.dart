@@ -65,6 +65,8 @@ class VideoConfig {
     this.textPosition,
     this.progressBarGap,
     this.videoViewProgressColors,
+    this.maxPreviewTime,
+    this.maxPreviewTimeBuilder,
   })  : assert(
           maxScale > 0,
           'The maxScale must be greater than zero and greater than minScale.',
@@ -307,6 +309,16 @@ class VideoConfig {
   ///
   /// See [VideoViewProgressColors] for default values.
   final VideoViewProgressColors? videoViewProgressColors;
+
+  /// Maximum preview duration.
+  ///
+  /// If the set duration exceeds the maximum duration of the video,
+  /// it is deemed that the entire video can be watched.
+  final Duration? maxPreviewTime;
+
+  /// The widget displayed when the maximum preview duration is reached.
+  final Widget Function(BuildContext context, bool isFullScreen)?
+      maxPreviewTimeBuilder;
 }
 
 // ignore: public_member_api_docs
