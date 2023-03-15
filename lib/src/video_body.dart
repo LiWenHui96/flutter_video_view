@@ -28,7 +28,8 @@ class VideoBody extends StatelessWidget {
       context,
       value.status,
       TextStyle(fontSize: config.textSize, color: config.foregroundColor),
-      onPressed: () async => controller.initialize(),
+      onPressed: () async =>
+          controller.initialize().then((_) => controller.play()),
     );
 
     return Container(
@@ -47,12 +48,12 @@ class VideoBody extends StatelessWidget {
                 aspectRatio: value.aspectRatio,
                 child: VideoPlayer(controller.videoPlayerController),
               ),
-            )
-          else
-            config.placeholderBuilder?.call(value.status) ?? placeholderChild,
+            ),
           if (config.overlay != null) config.overlay!,
           if (config.showControls?.call(value.isFullScreen) ?? true)
             config.controlsType.child,
+          if (!value.status.isSuccess)
+            config.placeholderBuilder?.call(value.status) ?? placeholderChild,
         ],
       ),
     );
