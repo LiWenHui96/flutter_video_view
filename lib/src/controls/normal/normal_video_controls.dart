@@ -5,9 +5,9 @@ import 'package:flutter_video_view/src/video_view.dart';
 import 'package:flutter_video_view/src/video_view_localizations.dart';
 import 'package:flutter_video_view/src/widgets/widgets.dart';
 
-import 'controls_bottom.dart';
-import 'controls_center.dart';
-import 'controls_top.dart';
+import 'normal_video_controls_bottom.dart';
+import 'normal_video_controls_center.dart';
+import 'normal_video_controls_top.dart';
 
 /// @Describe: The controls of video.
 ///
