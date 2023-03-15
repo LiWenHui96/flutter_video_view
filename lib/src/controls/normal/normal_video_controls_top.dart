@@ -43,10 +43,11 @@ class ControlsTop extends StatelessWidget {
           )
         else
           const Spacer(),
-        if (config.topActions != null)
+        if (config.topActionsBuilder != null)
           Row(
             mainAxisSize: MainAxisSize.min,
-            children: config.topActions!.call(context, value.isFullScreen),
+            children:
+                config.topActionsBuilder!.call(context, value.isFullScreen),
           ),
       ],
     );

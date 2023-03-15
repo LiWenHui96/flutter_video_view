@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_video_view/src/controls/normal/normal_video_controls.dart';
 import 'package:flutter_video_view/src/video_config.dart';
 import 'package:flutter_video_view/src/video_view.dart';
 import 'package:flutter_video_view/src/widgets/widgets.dart';
@@ -187,17 +186,3 @@ abstract class BaseVideoControls<T extends StatefulWidget>
 
 /// Manipulate the default hide time of the widget.
 const Duration defaultDuration = Duration(milliseconds: 300);
-
-/// Types of controls.
-enum ControlsType {
-  /// Universal
-  normal,
-}
-
-/// Extension of [ControlsType].
-extension ControlsTypeExtension on ControlsType {
-  ///
-  Widget get child => <Widget>[
-        const NormalVideoControls(),
-      ].elementAt(index);
-}

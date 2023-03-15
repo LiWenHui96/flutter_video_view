@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_video_view/src/controls/base_controls.dart';
 
+import 'controls/news/news_video_controls.dart';
+import 'controls/normal/normal_video_controls.dart';
 import 'video_view.dart';
 
 /// @Describe: The config of VideoView.
@@ -9,6 +10,75 @@ import 'video_view.dart';
 /// @Author: LiWeNHuI
 /// @Date: 2023/3/1
 
+/// Types of controls.
+enum ControlsType {
+  /// Universal
+  normal,
+
+  /// News
+  news,
+}
+
+/// Extension of [ControlsType].
+extension ControlsTypeExtension on ControlsType {
+  ///
+  Widget get child => <Widget>[
+        const NormalVideoControls(),
+        const NewsVideoControls(),
+      ].elementAt(index);
+}
+
+/// Widgets in various initialized states.
+typedef PlaceholderBuilder = Widget? Function(VideoInitStatus status);
+
+/// Whether to display controls.
+typedef OnShowControls = bool Function(bool isFullScreen);
+
+/// Widget to display when video playback is complete.
+typedef FinishBuilder = Widget Function(
+  BuildContext context,
+  bool isFullScreen,
+);
+
+/// Widgets placed at the top right.
+typedef TopActionsBuilder = List<Widget> Function(
+  BuildContext context,
+  bool isFullScreen,
+);
+
+/// Widgets on the middle left.
+typedef CenterActionsBuilder = List<Widget> Function(
+  BuildContext context,
+  bool isFullScreen,
+  bool isLock,
+  Widget lockButton,
+);
+
+/// It is used to define the control buttons at the bottom and the layout of
+/// the display content.
+typedef BottomBuilder = Widget? Function(
+  BuildContext context,
+  bool isFullScreen,
+  Widget playPauseButton,
+  Widget progressBar,
+  Widget muteButton,
+  Widget fullScreenButton,
+);
+
+/// Enumeration value where the progress information is located on
+/// the progress bar.
+typedef OnTextPosition = VideoTextPosition Function(bool isFullScreen);
+
+/// The interval width of the progress bar and time information widget.
+typedef OnProgressBarGap = double Function(bool isFullScreen);
+
+/// The widget displayed when the maximum preview duration is reached.
+typedef MaxPreviewTimeBuilder = Widget Function(
+  BuildContext context,
+  bool isFullScreen,
+);
+
+/// The config of VideoView.
 class VideoConfig {
   /// Overall configuration for the video view. Including [width], [height],
   /// [useSafe], [backgroundColor] etc.
@@ -59,13 +129,13 @@ class VideoConfig {
     this.canBack = true,
     this.title,
     this.titleTextStyle,
-    this.topActions,
+    this.topActionsBuilder,
     this.showLock = false,
-    this.centerLeftActions,
-    this.centerRightActions,
+    this.centerLeftActionsBuilder,
+    this.centerRightActionsBuilder,
     this.bottomBuilder,
-    this.textPosition,
-    this.progressBarGap,
+    this.onTextPosition,
+    this.onProgressBarGap,
     this.videoViewProgressColors,
     this.maxPreviewTime,
     this.maxPreviewTimeBuilder,
@@ -205,7 +275,7 @@ class VideoConfig {
   /// Whether to display controls.
   ///
   /// Defaults to true.
-  final bool Function(bool isFullScreen)? showControls;
+  final OnShowControls? showControls;
 
   /// Defines the [Duration] before the video controls are hidden.
   ///
@@ -224,7 +294,7 @@ class VideoConfig {
   final Widget? bufferingBuilder;
 
   /// Widget to display when video playback is complete.
-  final Widget Function(BuildContext context, bool isFullScreen)? finishBuilder;
+  final FinishBuilder? finishBuilder;
 
   /// The background color of the controller.
   final List<Color> controlsBackgroundColor;
@@ -264,8 +334,7 @@ class VideoConfig {
   final TextStyle? titleTextStyle;
 
   /// Widgets placed at the top right.
-  final List<Widget> Function(BuildContext context, bool isFullScreen)?
-      topActions;
+  final TopActionsBuilder? topActionsBuilder;
 
   /// Whether the lockable button is displayed.
   final bool showLock;
@@ -273,42 +342,25 @@ class VideoConfig {
   /// Widgets on the middle left.
   ///
   /// `lockButton` is the lockable button, which is used to decide where put it.
-  final List<Widget> Function(
-    BuildContext context,
-    bool isFullScreen,
-    bool isLock,
-    Widget lockButton,
-  )? centerLeftActions;
+  final CenterActionsBuilder? centerLeftActionsBuilder;
 
   /// Widgets on the middle right.
   ///
   /// `lockButton` is the lockable button, which is used to decide where put it.
-  final List<Widget> Function(
-    BuildContext context,
-    bool isFullScreen,
-    bool isLock,
-    Widget lockButton,
-  )? centerRightActions;
+  final CenterActionsBuilder? centerRightActionsBuilder;
 
   /// It is used to define the control buttons at the bottom and the layout of
   /// the display content.
-  final Widget? Function(
-    BuildContext context,
-    bool isFullScreen,
-    Widget playPauseButton,
-    Widget progressBar,
-    Widget muteButton,
-    Widget fullScreenButton,
-  )? bottomBuilder;
+  final BottomBuilder? bottomBuilder;
 
   /// Enumeration value where the progress information is located on
   /// the progress bar.
   ///
   /// Defaults to TextPosition.ltl.
-  final VideoTextPosition Function(bool isFullScreen)? textPosition;
+  final OnTextPosition? onTextPosition;
 
   /// The interval width of the progress bar and time information widget.
-  final double Function(bool isFullScreen)? progressBarGap;
+  final OnProgressBarGap? onProgressBarGap;
 
   /// The default colors used throughout the indicator.
   ///
@@ -322,9 +374,5 @@ class VideoConfig {
   final Duration? maxPreviewTime;
 
   /// The widget displayed when the maximum preview duration is reached.
-  final Widget Function(BuildContext context, bool isFullScreen)?
-      maxPreviewTimeBuilder;
+  final MaxPreviewTimeBuilder? maxPreviewTimeBuilder;
 }
-
-// ignore: public_member_api_docs
-typedef PlaceholderBuilder = Widget? Function(VideoInitStatus status);

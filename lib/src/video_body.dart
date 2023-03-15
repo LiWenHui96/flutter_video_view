@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
-import 'controls/base_controls.dart';
 import 'video_config.dart';
 import 'video_view.dart';
 import 'video_view_localizations.dart';

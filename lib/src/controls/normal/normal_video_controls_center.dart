@@ -63,12 +63,12 @@ class ControlsCenter extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
         _actions(
-          config.centerLeftActions
+          config.centerLeftActionsBuilder
               ?.call(context, value.isFullScreen, value.isLock, _lockButton()),
         ),
         const Spacer(),
         _actions(
-          config.centerRightActions
+          config.centerRightActionsBuilder
               ?.call(context, value.isFullScreen, value.isLock, _lockButton()),
         ),
       ],

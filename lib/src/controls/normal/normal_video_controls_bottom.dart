@@ -53,7 +53,8 @@ class ControlsBottom extends StatelessWidget {
     final TextStyle style =
         TextStyle(fontSize: config.textSize, color: config.foregroundColor);
     final VideoTextPosition textPosition =
-        config.textPosition?.call(value.isFullScreen) ?? VideoTextPosition.ltl;
+        config.onTextPosition?.call(value.isFullScreen) ??
+            VideoTextPosition.ltl;
 
     final Widget a = AnimatedPlayPause(
       isPlaying: value.isPlaying,
@@ -129,8 +130,9 @@ class ControlsBottom extends StatelessWidget {
     GestureDragEndCallback onDragEnd,
     ValueChanged<double> onTapUp,
   ) {
-    final SizedBox divider =
-        SizedBox(width: config.progressBarGap?.call(value.isFullScreen) ?? 10);
+    final SizedBox divider = SizedBox(
+      width: config.onProgressBarGap?.call(value.isFullScreen) ?? 10,
+    );
 
     final Widget position = _buildPosition(value, config, style);
 
