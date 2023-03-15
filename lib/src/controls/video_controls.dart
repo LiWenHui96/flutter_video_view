@@ -49,10 +49,6 @@ class _VideoControlsState extends BaseVideoControls<VideoControls> {
         child,
         if (value.isFullScreen)
           ControlsCenter(onHideControls: () => showOrHide(visible: true)),
-        if (config.showCenterPlay && !value.isPlaying && !value.isBuffering)
-          _buildPlayButtonWidget(),
-        if (config.showBuffering && !value.isFinish && value.isBuffering)
-          config.bufferingBuilder ?? const CircularProgressIndicator(),
       ],
     );
 
@@ -60,6 +56,17 @@ class _VideoControlsState extends BaseVideoControls<VideoControls> {
       opacity: value.isVisible ? 1 : .0,
       duration: defaultDuration,
       child: child,
+    );
+
+    child = Stack(
+      alignment: Alignment.center,
+      children: <Widget>[
+        child,
+        if (config.showCenterPlay && !value.isPlaying && !value.isBuffering)
+          _buildPlayButtonWidget(),
+        if (config.showBuffering && !value.isFinish && value.isBuffering)
+          config.bufferingBuilder ?? const CircularProgressIndicator(),
+      ],
     );
 
     child = GestureDetector(
