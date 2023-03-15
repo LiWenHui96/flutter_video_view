@@ -1,3 +1,27 @@
+## 2.0.0
+
+* Welcome to a brand-new version.
+* Brings a lot of disruptive upgrades.
+* Regarding the modification of the file name.
+  * `VideoViewController` -> `VideoController`.
+  * `VideoViewValue` -> `VideoValue`.
+  * `VideoViewConfig` -> `VideoConfig`.
+* Regarding the modification of the attribute name.
+  * `tipBackgroundColor` -> `tooltipBackgroundColor`.
+  * `defaultTextSize` -> `textSize`.
+  * `defaultIconSize` -> `iconSize`.
+  * `canUseSafe` -> `useSafe`.
+  * `showCenterPlayButton` -> `showCenterPlay`.
+* The attribute that was removed.
+  * Delete `beforePlayBuilder`.
+  * Delete `routePageBuilder`.
+  * Delete `systemOverlaysEnterFullScreen`.
+  * Delete `canShowDevice`.
+* Newly added attributes.
+  * Add `controlsType`.
+  * Add `maxPreviewTime`.
+  * Add `maxPreviewTimeBuilder`.
+
 ## 1.1.7
 
 * Add `beforePlayBuilder`, `showCenterPlayButton`, `centerPlayButton`.
