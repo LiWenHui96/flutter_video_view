@@ -23,6 +23,9 @@ abstract class BaseVideoControls<T extends StatefulWidget>
   /// Whether the loading is successful.
   bool _isSuccess = false;
 
+  /// The current number of seconds.
+  int _currentSeconds = 0;
+
   @override
   void didChangeDependencies() {
     final VideoController? oldController = _controller;
@@ -84,13 +87,7 @@ abstract class BaseVideoControls<T extends StatefulWidget>
   /// Change the state of the controller so that it can be shown or hidden.
   @protected
   void showOrHide({bool? visible, bool startTimer = true}) {
-    hideTimer?.cancel();
-    hideTimer = null;
-
     controller.setVisible(visible ?? !value.isVisible);
-    if (value.isVisible && startTimer) {
-      startHideTimer();
-    }
   }
 
   /// Play or pause video.
@@ -113,13 +110,23 @@ abstract class BaseVideoControls<T extends StatefulWidget>
   /// Start [hideTimer].
   @protected
   void startHideTimer() {
-    if (hideTimer != null) {
-      return;
-    }
+    hideTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
+      if (timer.isActive && value.isVisible) {
+        final int hideSeconds = config.hideControlsTimer.inSeconds;
 
-    hideTimer = Timer(config.hideControlsTimer, () {
-      controller.setVisible(false);
+        if (_currentSeconds == hideSeconds) {
+          controller.setVisible(false);
+          _currentSeconds = 0;
+        } else {
+          _currentSeconds++;
+        }
+      }
     });
+  }
+
+  /// Reset seconds.
+  void resetSeconds() {
+    _currentSeconds = 0;
   }
 
   /// External package for volume and brightness, etc.

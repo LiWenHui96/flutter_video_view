@@ -186,12 +186,8 @@ class _VideoControlsState extends BaseVideoControls<VideoControls> {
       },
       onFullScreen: () {
         if (canUse) {
+          resetSeconds();
           controller.setFullScreen(!value.isFullScreen);
-
-          Future<void>.delayed(
-            defaultDuration,
-            () => showOrHide(visible: true),
-          );
         }
       },
       onDragStart: (DragStartDetails details) {
