@@ -12,6 +12,12 @@
   * `defaultIconSize` -> `iconSize`.
   * `canUseSafe` -> `useSafe`.
   * `showCenterPlayButton` -> `showCenterPlay`.
+  * `centerPlayButton` -> `centerPlayButtonBuilder`.
+  * `topActions` -> `topActionsBuilder`.
+  * `centerLeftActions` -> `centerLeftActionsBuilder`.
+  * `centerRightActions` -> `centerRightActionsBuilder`.
+  * `textPosition` -> `onTextPosition`.
+  * `progressBarGap` -> `onProgressBarGap`.
 * The attribute that was removed.
   * Delete `beforePlayBuilder`.
   * Delete `routePageBuilder`.
