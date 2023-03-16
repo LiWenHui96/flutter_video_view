@@ -121,7 +121,7 @@ final view = VideoView(
 | finishBuilder                     | `FinishBuilder?`           | 视频播放完成时显示的小部件                      | `null`                                                                                        |
 | controlsBackgroundColor           | `List<Color>`              | 控制器的背景色                            | <Color>[Color.fromRGBO(0, 0, 0, .7), Color.fromRGBO(0, 0, 0, .3), Color.fromRGBO(0, 0, 0, 0)] |
 | showCenterPlay                    | `bool`                     | 是否显示在中部的播放按钮                       | `true`                                                                                        |
-| centerPlayButton                  | `Widget?`                  | 中部的播放按钮                            | `null`                                                                                        |
+| centerPlayButtonBuilder           | `CenterPlayButtonBuilder?` | 中部的播放按钮                            | `null`                                                                                        |
 | canLongPress                      | `bool`                     | 长按是否可以最大速度播放视频                     | `true`                                                                                        |
 | canChangeVolumeOrBrightness       | `bool`                     | 音量或亮度是否可以调节                        | `true`                                                                                        |
 | canChangeProgress                 | `bool`                     | 视频进度是否可以调整                         | `true`                                                                                        |
