@@ -94,21 +94,21 @@ class _NormalVideoControlsState extends BaseVideoControls<NormalVideoControls> {
       return const SizedBox.shrink();
     }
 
+    final Widget child = Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(.35),
+        shape: BoxShape.circle,
+      ),
+      child: AnimatedPlayPause(
+        isPlaying: value.isPlaying,
+        color: config.foregroundColor,
+        onPressed: playOrPause,
+      ),
+    );
+
     return Center(
-      child: config.centerPlayButton != null
-          ? GestureDetector(onTap: playOrPause, child: config.centerPlayButton)
-          : Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(.35),
-                shape: BoxShape.circle,
-              ),
-              child: AnimatedPlayPause(
-                isPlaying: value.isPlaying,
-                color: config.foregroundColor,
-                onPressed: playOrPause,
-              ),
-            ),
+      child: config.centerPlayButtonBuilder?.call(playOrPause) ?? child,
     );
   }
 

@@ -186,3 +186,19 @@ abstract class BaseVideoControls<T extends StatefulWidget>
 
 /// Manipulate the default hide time of the widget.
 const Duration defaultDuration = Duration(milliseconds: 300);
+
+/// Calculate hours, minutes and seconds through Duration.
+String formatDuration(Duration position) {
+  final int ms = position.inMilliseconds;
+
+  int seconds = ms ~/ 1000;
+  final int hours = seconds ~/ 3600;
+  seconds = seconds % 3600;
+  final int minutes = seconds ~/ 60;
+  seconds = seconds % 60;
+
+  final String minutesString = minutes.toString().padLeft(2, '0');
+  final String secondsString = seconds.toString().padLeft(2, '0');
+
+  return '${hours == 0 ? '' : '$hours:'}$minutesString:$secondsString';
+}

@@ -21,7 +21,7 @@ enum ControlsType {
 
 /// Extension of [ControlsType].
 extension ControlsTypeExtension on ControlsType {
-  ///
+  /// Widget
   Widget get child => <Widget>[
         const NormalVideoControls(),
         const NewsVideoControls(),
@@ -39,6 +39,9 @@ typedef FinishBuilder = Widget Function(
   BuildContext context,
   bool isFullScreen,
 );
+
+/// Play button in the middle.
+typedef CenterPlayButtonBuilder = Widget Function(VoidCallback onPlayOrPause);
 
 /// Widgets placed at the top right.
 typedef TopActionsBuilder = List<Widget> Function(
@@ -122,7 +125,7 @@ class VideoConfig {
       Color.fromRGBO(0, 0, 0, 0),
     ],
     this.showCenterPlay = true,
-    this.centerPlayButton,
+    this.centerPlayButtonBuilder,
     this.canLongPress = true,
     this.canChangeVolumeOrBrightness = true,
     this.canChangeProgress = true,
@@ -305,7 +308,7 @@ class VideoConfig {
   final bool showCenterPlay;
 
   /// Play button in the middle.
-  final Widget? centerPlayButton;
+  final CenterPlayButtonBuilder? centerPlayButtonBuilder;
 
   /// Whether the video can be played at double speed by long pressing.
   ///
