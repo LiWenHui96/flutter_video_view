@@ -824,9 +824,9 @@ enum VideoTextPosition {
 /// describes the video's status.
 ///
 /// The widget uses default colors that are customizeable through this class.
-class VideoViewProgressColors {
+class VideoProgressBarColors {
   /// Any property can be set to any paint. They each have defaults.
-  VideoViewProgressColors({
+  VideoProgressBarColors({
     this.backgroundColor = const Color.fromRGBO(255, 255, 255, .4),
     this.playedColor = const Color.fromRGBO(255, 255, 255, 1),
     this.bufferedColor = const Color.fromRGBO(255, 255, 255, .7),

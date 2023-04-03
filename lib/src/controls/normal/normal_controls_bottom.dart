@@ -3,7 +3,6 @@ import 'package:flutter_video_view/src/base_controls.dart';
 import 'package:flutter_video_view/src/video_config.dart';
 import 'package:flutter_video_view/src/video_view.dart';
 import 'package:flutter_video_view/src/widgets/widgets.dart';
-import 'package:video_player/video_player.dart';
 
 /// @Describe: Bottom action bar
 ///
@@ -103,7 +102,7 @@ class NormalControlsBottom extends StatelessWidget {
   }
 
   Widget _buildMuteButton(VideoValue value, VideoConfig config) {
-    return _AnimatedMute(
+    return AnimatedMute(
       isMute: value.volume == 0,
       duration: defaultDuration,
       color: config.foregroundColor,
@@ -112,7 +111,7 @@ class NormalControlsBottom extends StatelessWidget {
   }
 
   Widget _buildFullScreenButton(VideoValue value, VideoConfig config) {
-    return _AnimatedFullscreen(
+    return AnimatedFullscreen(
       isFullscreen: value.isFullScreen,
       duration: defaultDuration,
       color: config.foregroundColor,
@@ -188,8 +187,8 @@ class NormalControlsBottom extends StatelessWidget {
     GestureDragEndCallback onDragEnd,
     ValueChanged<double> onTapUp,
   ) {
-    final Widget child = _VideoProgressBar(
-      colors: config.videoViewProgressColors,
+    final Widget child = VideoProgressBar(
+      colors: config.videoProgressBarColors,
       value: value,
       onDragStart: onDragStart,
       onDragUpdate: onDragUpdate,
@@ -198,203 +197,5 @@ class NormalControlsBottom extends StatelessWidget {
     );
 
     return Expanded(child: SizedBox(height: 24, child: child));
-  }
-}
-
-class _AnimatedMute extends StatelessWidget {
-  const _AnimatedMute({
-    Key? key,
-    required this.isMute,
-    required this.duration,
-    this.color = Colors.white,
-    this.onPressed,
-  }) : super(key: key);
-
-  final bool isMute;
-  final Duration duration;
-  final Color color;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      icon: AnimatedCrossFade(
-        duration: duration,
-        crossFadeState:
-            isMute ? CrossFadeState.showFirst : CrossFadeState.showSecond,
-        alignment: Alignment.center,
-        firstChild: Icon(Icons.volume_off_rounded, color: color),
-        secondChild: Icon(Icons.volume_up_rounded, color: color),
-      ),
-      onPressed: onPressed,
-    );
-  }
-}
-
-class _AnimatedFullscreen extends StatelessWidget {
-  const _AnimatedFullscreen({
-    Key? key,
-    required this.isFullscreen,
-    required this.duration,
-    this.color = Colors.white,
-    this.onPressed,
-  }) : super(key: key);
-
-  final bool isFullscreen;
-  final Duration duration;
-  final Color color;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      icon: AnimatedCrossFade(
-        duration: duration,
-        crossFadeState:
-            isFullscreen ? CrossFadeState.showFirst : CrossFadeState.showSecond,
-        alignment: Alignment.center,
-        firstChild: Icon(Icons.fullscreen_exit, color: color),
-        secondChild: Icon(Icons.fullscreen, color: color),
-      ),
-      onPressed: onPressed,
-    );
-  }
-}
-
-class _VideoProgressBar extends StatefulWidget {
-  _VideoProgressBar({
-    Key? key,
-    VideoViewProgressColors? colors,
-    required this.value,
-    required this.onDragStart,
-    required this.onDragUpdate,
-    required this.onDragEnd,
-    required this.onTapUp,
-  })  : colors = colors ?? VideoViewProgressColors(),
-        super(key: key);
-
-  final VideoViewProgressColors colors;
-  final VideoValue value;
-  final GestureDragStartCallback onDragStart;
-  final ValueChanged<double> onDragUpdate;
-  final GestureDragEndCallback onDragEnd;
-  final ValueChanged<double> onTapUp;
-
-  @override
-  State<_VideoProgressBar> createState() => _VideoProgressBarState();
-}
-
-class _VideoProgressBarState extends BaseState<_VideoProgressBar> {
-  double _seekToRelative(Offset globalPosition) {
-    final RenderBox box = context.findRenderObject()! as RenderBox;
-    return box.globalToLocal(globalPosition).dx / box.size.width;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final Widget child = Center(
-      child: Container(
-        height: MediaQuery.of(context).size.height / 2,
-        width: MediaQuery.of(context).size.width,
-        color: Colors.transparent,
-        child: CustomPaint(
-          painter:
-              _ProgressBarPainter(value: widget.value, colors: widget.colors),
-        ),
-      ),
-    );
-
-    return GestureDetector(
-      onHorizontalDragStart: widget.onDragStart,
-      onHorizontalDragUpdate: (DragUpdateDetails details) {
-        widget.onDragUpdate.call(_seekToRelative(details.globalPosition));
-      },
-      onHorizontalDragEnd: widget.onDragEnd,
-      onTapUp: (TapUpDetails details) {
-        widget.onTapUp.call(_seekToRelative(details.globalPosition));
-      },
-      child: child,
-    );
-  }
-}
-
-class _ProgressBarPainter extends CustomPainter {
-  _ProgressBarPainter({required this.value, required this.colors});
-
-  final VideoValue value;
-  final VideoViewProgressColors colors;
-
-  @override
-  bool shouldRepaint(CustomPainter painter) {
-    return true;
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const double height = 2;
-    const Radius radius = Radius.circular(4);
-
-    final double halfHeight = size.height / 2;
-
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromPoints(
-          Offset(0, halfHeight),
-          Offset(size.width, halfHeight + height),
-        ),
-        radius,
-      ),
-      Paint()..color = colors.backgroundColor,
-    );
-    if (!value.isInitialized) {
-      return;
-    }
-    final double playedPartPercent =
-        (value.isDragProgress ? value.dragDuration : value.position)
-                .inMilliseconds /
-            value.duration.inMilliseconds;
-    final double playedPart = handleValue(playedPartPercent) * size.width;
-    canvas
-      ..drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromPoints(
-            Offset(0, halfHeight),
-            Offset(playedPart, halfHeight + height),
-          ),
-          radius,
-        ),
-        Paint()..color = colors.playedColor,
-      )
-      ..drawCircle(
-        Offset(playedPart, halfHeight + height / 2),
-        height * (value.isDragProgress ? 3 : 2),
-        Paint()..color = colors.handleColor,
-      )
-      ..drawCircle(
-        Offset(playedPart, halfHeight + height / 2),
-        height * (value.isDragProgress ? 5 : 3),
-        Paint()..color = colors.handleMoreColor,
-      );
-
-    for (final DurationRange range in value.buffered) {
-      final double start = range.startFraction(value.duration) * size.width;
-      final double end = range.endFraction(value.duration) * size.width;
-      final Offset a = Offset(start, halfHeight);
-      final Offset b = Offset(end, halfHeight + height);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromPoints(a, b), radius),
-        Paint()..color = colors.bufferedColor,
-      );
-    }
-  }
-
-  double handleValue(double value) {
-    if (value > 1) {
-      return 1;
-    } else if (value.isNegative) {
-      return 0;
-    } else {
-      return value;
-    }
   }
 }

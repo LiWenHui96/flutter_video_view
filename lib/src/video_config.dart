@@ -22,10 +22,8 @@ enum ControlsType {
 /// Extension of [ControlsType].
 extension ControlsTypeExtension on ControlsType {
   /// Widget
-  Widget get child => <Widget>[
-        const NormalControls(),
-        const NewsVideoControls(),
-      ].elementAt(index);
+  Widget get child =>
+      <Widget>[const NormalControls(), const NewsControls()].elementAt(index);
 }
 
 /// Widgets in various initialized states.
@@ -139,7 +137,7 @@ class VideoConfig {
     this.bottomBuilder,
     this.onTextPosition,
     this.onProgressBarGap,
-    this.videoViewProgressColors,
+    this.videoProgressBarColors,
     this.maxPreviewTime,
     this.maxPreviewTimeBuilder,
   })  : assert(
@@ -367,8 +365,8 @@ class VideoConfig {
 
   /// The default colors used throughout the indicator.
   ///
-  /// See [VideoViewProgressColors] for default values.
-  final VideoViewProgressColors? videoViewProgressColors;
+  /// See [VideoProgressBarColors] for default values.
+  final VideoProgressBarColors? videoProgressBarColors;
 
   /// Maximum preview duration.
   ///
