@@ -135,7 +135,7 @@ final view = VideoView(
 | bottomBuilder                     | `BottomBuilder?`           | 用于定义底部的控制按钮和显示内容的布局                | `null`                                                                                        |
 | onTextPosition                    | `OnTextPosition?`          | 进度信息文字位于进度条上的枚举值                   | `null`                                                                                        |
 | onProgressBarGap                  | `OnProgressBarGap?`        | 进度条和时间信息小部件的间隔宽度                   | `10`                                                                                          |
-| videoViewProgressColors           | `VideoViewProgressColors?` | 指示器中使用的默认颜色                        | `null`                                                                                        |
+| videoProgressBarColors            | `VideoProgressBarColors?`  | 指示器中使用的默认颜色                        | `null`                                                                                        |
 | maxPreviewTime                    | `Duration?`                | 最大可预览时长                            | `null`                                                                                        |
 | maxPreviewTimeBuilder             | `MaxPreviewTimeBuilder?`   | 达到最大预览可预览时长时显示的小部件。                | `null`                                                                                        |
 
