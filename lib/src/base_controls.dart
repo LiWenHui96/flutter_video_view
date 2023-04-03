@@ -6,6 +6,8 @@ import 'package:flutter_video_view/src/video_config.dart';
 import 'package:flutter_video_view/src/video_view.dart';
 import 'package:flutter_video_view/src/widgets/widgets.dart';
 
+import 'utils/utils.dart';
+
 /// @Describe: Base for VideoControls.
 ///
 /// @Author: LiWeNHuI
@@ -129,6 +131,192 @@ abstract class BaseVideoControls<T extends StatefulWidget>
     _currentSeconds = 0;
   }
 
+  /// PlayButton
+  @protected
+  Widget buildPlayButtonWidget() {
+    if (!value.status.isSuccess ||
+        value.isDragProgress ||
+        value.isVerticalDrag ||
+        value.isLock) {
+      return const SizedBox.shrink();
+    }
+
+    final Widget child = Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(.35),
+        shape: BoxShape.circle,
+      ),
+      child: AnimatedPlayPause(
+        isPlaying: value.isPlaying,
+        color: config.foregroundColor,
+        onPressed: playOrPause,
+      ),
+    );
+
+    return Center(
+      child: config.centerPlayButtonBuilder?.call(playOrPause) ?? child,
+    );
+  }
+
+  /// A widget that shows when playback is complete.
+  @protected
+  Widget buildFinishWidget() {
+    Widget child = Center(
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(.85),
+          shape: BoxShape.circle,
+        ),
+        child: IconButton(
+          onPressed: playOrPause,
+          icon: const Icon(Icons.refresh_rounded),
+        ),
+      ),
+    );
+
+    child = Container(
+      color: config.tooltipBackgroundColor,
+      child: SafeArea(
+        top: value.isPortrait && value.isFullScreen,
+        bottom: false,
+        child: Stack(children: <Widget>[kBackButton(), child]),
+      ),
+    );
+
+    return config.finishBuilder?.call(context, value.isFullScreen) ?? child;
+  }
+
+  /// A Widget that is shown when the maximum preview duration is reached.
+  @protected
+  Widget buildMaxPreviewWidget() {
+    final Widget child = Container(
+      alignment: Alignment.topLeft,
+      color: Colors.black,
+      child: SafeArea(
+        top: value.isPortrait && value.isFullScreen,
+        bottom: false,
+        child: kBackButton(),
+      ),
+    );
+
+    return config.maxPreviewTimeBuilder?.call(context, value.isFullScreen) ??
+        child;
+  }
+
+  /// Called when a long press gesture with a primary button has been
+  /// recognized.
+  @protected
+  void onLongPressStart(LongPressStartDetails details) {
+    if (canUse &&
+        config.canLongPress &&
+        value.isPlaying &&
+        value.playbackSpeed < controller.maxPlaybackSpeed) {
+      showOrHide(visible: false);
+
+      controller
+        ..setMaxPlaybackSpeed(true)
+        ..setPlaybackSpeed();
+    }
+  }
+
+  /// A pointer that has triggered a long-press with a primary button has
+  /// stopped contacting the screen.
+  @protected
+  void onLongPressEnd(LongPressEndDetails details) {
+    if (value.isMaxPlaybackSpeed) {
+      controller
+        ..setMaxPlaybackSpeed(false)
+        ..setPlaybackSpeed(speed: 1);
+    }
+  }
+
+  /// A pointer has contacted the screen with a primary button and has begun to
+  /// move vertically.
+  @protected
+  Future<void> onVerticalDragStart(DragStartDetails details) async {
+    if (canUse && config.canChangeVolumeOrBrightness) {
+      controller
+        ..setVerticalDrag(true)
+        ..setVerticalDragType(
+          details.globalPosition.dx < totalWidth / 2
+              ? VerticalDragType.brightness
+              : VerticalDragType.volume,
+        );
+
+      double currentValue = 0;
+      if (value.verticalDragType == VerticalDragType.brightness) {
+        currentValue = await ScreenBrightnessUtil.current;
+      } else if (value.verticalDragType == VerticalDragType.volume) {
+        currentValue = await VolumeUtil.current;
+      }
+      controller.setVerticalDragValue(currentValue);
+    }
+  }
+
+  /// A pointer that is in contact with the screen with a primary button and
+  /// moving vertically has moved in the vertical direction.
+  @protected
+  Future<void> onVerticalDragUpdate(DragUpdateDetails details) async {
+    if (canUse && value.isVerticalDrag) {
+      controller.setVerticalDragValue(
+        value.verticalDragValue - (details.delta.dy / totalHeight),
+      );
+
+      if (value.verticalDragType == VerticalDragType.brightness) {
+        await ScreenBrightnessUtil.setScreenBrightness(value.verticalDragValue);
+      } else if (value.verticalDragType == VerticalDragType.volume) {
+        await VolumeUtil.setVolume(value.verticalDragValue);
+      }
+    }
+  }
+
+  /// A pointer that was previously in contact with the screen with a primary
+  /// button and moving vertically is no longer in contact with the screen and
+  /// was moving at a specific velocity when it stopped contacting the screen.
+  @protected
+  void onVerticalDragEnd(DragEndDetails details) {
+    if (value.isVerticalDrag) {
+      controller.setVerticalDrag(false);
+    }
+  }
+
+  /// A pointer has contacted the screen with a primary button and has begun to
+  /// move horizontally.
+  @protected
+  void onHorizontalDragStart(DragStartDetails details) {
+    if (canUse && config.canChangeProgress) {
+      controller
+        ..setDragProgress(true)
+        ..setDragDuration(value.position);
+    }
+  }
+
+  /// A pointer that is in contact with the screen with a primary button and
+  /// moving horizontally has moved in the horizontal direction.
+  @protected
+  void onHorizontalDragUpdate(DragUpdateDetails details) {
+    if (canUse && value.isDragProgress) {
+      final double relative = details.delta.dx / totalWidth;
+      controller.setDragDuration(
+        value.dragDuration + value.dragTotalDuration * relative,
+      );
+    }
+  }
+
+  /// A pointer that was previously in contact with the screen with a primary
+  /// button and moving horizontally is no longer in contact with the screen and
+  /// was moving at a specific velocity when it stopped contacting the screen.
+  @protected
+  void onHorizontalDragEnd(DragEndDetails details) {
+    if (value.isDragProgress) {
+      controller
+        ..setDragProgress(false)
+        ..seekTo(value.dragDuration);
+    }
+  }
+
   /// External package for volume and brightness, etc.
   @protected
   Widget tooltipWidget({
@@ -165,6 +353,15 @@ abstract class BaseVideoControls<T extends StatefulWidget>
       icon: const Icon(Icons.arrow_back_ios),
     );
   }
+
+  /// The horizontal extent of this size.
+  double get totalWidth =>
+      (context.size?.width ?? MediaQuery.of(context).size.width).ceilToDouble();
+
+  /// The vertical extent of this size.
+  double get totalHeight =>
+      (context.size?.height ?? MediaQuery.of(context).size.height)
+          .ceilToDouble();
 
   /// Whether the operation can be performed.
   bool get canUse =>

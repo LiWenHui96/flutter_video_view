@@ -10,9 +10,9 @@ import 'package:video_player/video_player.dart';
 /// @Author: LiWeNHuI
 /// @Date: 2023/3/5
 
-class ControlsBottom extends StatelessWidget {
-  // ignore: public_member_api_docs
-  const ControlsBottom({
+class NormalControlsBottom extends StatelessWidget {
+  /// Bottom action bar
+  const NormalControlsBottom({
     Key? key,
     required this.onPlayOrPause,
     required this.onMute,

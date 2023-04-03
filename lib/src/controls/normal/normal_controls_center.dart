@@ -9,9 +9,9 @@ import 'package:flutter_video_view/src/widgets/widgets.dart';
 /// @Author: LiWeNHuI
 /// @Date: 2023/3/3
 
-class ControlsCenter extends StatelessWidget {
+class NormalControlsCenter extends StatelessWidget {
   /// Center action bar
-  const ControlsCenter({Key? key, required this.onHideControls})
+  const NormalControlsCenter({Key? key, required this.onHideControls})
       : super(key: key);
 
   /// Used to hide controllers.

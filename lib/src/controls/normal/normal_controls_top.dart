@@ -8,9 +8,9 @@ import 'package:flutter_video_view/src/widgets/widgets.dart';
 /// @Author: LiWeNHuI
 /// @Date: 2023/3/3
 
-class ControlsTop extends StatelessWidget {
+class NormalControlsTop extends StatelessWidget {
   /// Top action bar
-  const ControlsTop({
+  const NormalControlsTop({
     Key? key,
     required this.backButton,
     required this.defaultStyle,

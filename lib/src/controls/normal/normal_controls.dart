@@ -1,34 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_video_view/src/base_controls.dart';
-import 'package:flutter_video_view/src/utils/utils.dart';
 import 'package:flutter_video_view/src/video_view.dart';
 import 'package:flutter_video_view/src/video_view_localizations.dart';
-import 'package:flutter_video_view/src/widgets/widgets.dart';
 
-import 'normal_video_controls_bottom.dart';
-import 'normal_video_controls_center.dart';
-import 'normal_video_controls_top.dart';
+import 'normal_controls_bottom.dart';
+import 'normal_controls_center.dart';
+import 'normal_controls_top.dart';
 
 /// @Describe: The controls of video.
 ///
 /// @Author: LiWeNHuI
 /// @Date: 2023/3/2
 
-class NormalVideoControls extends StatefulWidget {
-  // ignore: public_member_api_docs
-  const NormalVideoControls({Key? key}) : super(key: key);
+class NormalControls extends StatefulWidget {
+  /// The controls of video.
+  ///
+  /// Base pattern.
+  const NormalControls({Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _NormalVideoControlsState();
+  State<NormalControls> createState() => _NormalControlsState();
 }
 
-class _NormalVideoControlsState extends BaseVideoControls<NormalVideoControls> {
+class _NormalControlsState extends BaseVideoControls<NormalControls> {
   double? _lastVolume;
 
   @override
   Widget build(BuildContext context) {
     if (value.isFinish) {
-      return _buildFinishWidget();
+      return buildFinishWidget();
     }
 
     if (value.isMaxPreviewTime) {
@@ -48,7 +48,7 @@ class _NormalVideoControlsState extends BaseVideoControls<NormalVideoControls> {
       children: <Widget>[
         child,
         if (value.isFullScreen)
-          ControlsCenter(onHideControls: () => showOrHide(visible: true)),
+          NormalControlsCenter(onHideControls: () => showOrHide(visible: true)),
       ],
     );
 
@@ -63,7 +63,7 @@ class _NormalVideoControlsState extends BaseVideoControls<NormalVideoControls> {
       children: <Widget>[
         child,
         if (config.showCenterPlay && !value.isPlaying && !value.isBuffering)
-          _buildPlayButtonWidget(),
+          buildPlayButtonWidget(),
         if (config.showBuffering && !value.isFinish && value.isBuffering)
           config.bufferingBuilder ?? const CircularProgressIndicator(),
       ],
@@ -72,72 +72,17 @@ class _NormalVideoControlsState extends BaseVideoControls<NormalVideoControls> {
     child = GestureDetector(
       onTap: showOrHide,
       onDoubleTap: playOrPause,
-      onVerticalDragStart: _onVerticalDragStart,
-      onVerticalDragUpdate: _onVerticalDragUpdate,
-      onVerticalDragEnd: _onVerticalDragEnd,
-      onHorizontalDragStart: _onHorizontalDragStart,
-      onHorizontalDragUpdate: _onHorizontalDragUpdate,
-      onHorizontalDragEnd: _onHorizontalDragEnd,
+      onVerticalDragStart: onVerticalDragStart,
+      onVerticalDragUpdate: onVerticalDragUpdate,
+      onVerticalDragEnd: onVerticalDragEnd,
+      onHorizontalDragStart: onHorizontalDragStart,
+      onHorizontalDragUpdate: onHorizontalDragUpdate,
+      onHorizontalDragEnd: onHorizontalDragEnd,
       behavior: HitTestBehavior.opaque,
       child: child,
     );
 
     return Stack(children: <Widget>[tooltipWidget(), child]);
-  }
-
-  /// PlayButton
-  Widget _buildPlayButtonWidget() {
-    if (!value.status.isSuccess ||
-        value.isDragProgress ||
-        value.isVerticalDrag ||
-        value.isLock) {
-      return const SizedBox.shrink();
-    }
-
-    final Widget child = Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(.35),
-        shape: BoxShape.circle,
-      ),
-      child: AnimatedPlayPause(
-        isPlaying: value.isPlaying,
-        color: config.foregroundColor,
-        onPressed: playOrPause,
-      ),
-    );
-
-    return Center(
-      child: config.centerPlayButtonBuilder?.call(playOrPause) ?? child,
-    );
-  }
-
-  /// A widget that shows when playback is complete.
-  Widget _buildFinishWidget() {
-    Widget child = Center(
-      child: Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(.85),
-          shape: BoxShape.circle,
-        ),
-        child: IconButton(
-          onPressed: playOrPause,
-          icon: const Icon(Icons.refresh_rounded),
-        ),
-      ),
-    );
-
-    child = Container(
-      color: config.tooltipBackgroundColor,
-      child: SafeArea(
-        top: value.isPortrait && value.isFullScreen,
-        bottom: false,
-        child: Stack(children: <Widget>[kBackButton(), child]),
-      ),
-    );
-
-    return config.finishBuilder?.call(context, value.isFullScreen) ?? child;
   }
 
   Widget _buildMaxPreviewWidget() {
@@ -157,20 +102,23 @@ class _NormalVideoControlsState extends BaseVideoControls<NormalVideoControls> {
 
   /// Top action bar
   Widget _buildTopControls() {
-    return ControlsTop(backButton: kBackButton(), defaultStyle: defaultStyle);
+    return NormalControlsTop(
+      backButton: kBackButton(),
+      defaultStyle: defaultStyle,
+    );
   }
 
   /// Function area for long press operation.
   Widget _buildLongPress() {
     return GestureDetector(
-      onLongPressStart: _onLongPressStart,
-      onLongPressEnd: _onLongPressEnd,
+      onLongPressStart: onLongPressStart,
+      onLongPressEnd: onLongPressEnd,
     );
   }
 
   /// Bottom action bar
   Widget _buildBottomControls() {
-    return ControlsBottom(
+    return NormalControlsBottom(
       onPlayOrPause: playOrPause,
       onMute: () {
         if (canUse) {
@@ -277,99 +225,6 @@ class _NormalVideoControlsState extends BaseVideoControls<NormalVideoControls> {
     return super
         .tooltipWidget(child: child, alignment: alignment, margin: margin);
   }
-
-  void _onLongPressStart(LongPressStartDetails details) {
-    if (canUse &&
-        config.canLongPress &&
-        value.isPlaying &&
-        value.playbackSpeed < controller.maxPlaybackSpeed) {
-      showOrHide(visible: false);
-
-      controller
-        ..setMaxPlaybackSpeed(true)
-        ..setPlaybackSpeed();
-    }
-  }
-
-  void _onLongPressEnd(LongPressEndDetails details) {
-    if (value.isMaxPlaybackSpeed) {
-      controller
-        ..setMaxPlaybackSpeed(false)
-        ..setPlaybackSpeed(speed: 1);
-    }
-  }
-
-  Future<void> _onVerticalDragStart(DragStartDetails details) async {
-    if (canUse && config.canChangeVolumeOrBrightness) {
-      controller
-        ..setVerticalDrag(true)
-        ..setVerticalDragType(
-          details.globalPosition.dx < totalWidth / 2
-              ? VerticalDragType.brightness
-              : VerticalDragType.volume,
-        );
-
-      double currentValue = 0;
-      if (value.verticalDragType == VerticalDragType.brightness) {
-        currentValue = await ScreenBrightnessUtil.current;
-      } else if (value.verticalDragType == VerticalDragType.volume) {
-        currentValue = await VolumeUtil.current;
-      }
-      controller.setVerticalDragValue(currentValue);
-    }
-  }
-
-  Future<void> _onVerticalDragUpdate(DragUpdateDetails details) async {
-    if (canUse && value.isVerticalDrag) {
-      controller.setVerticalDragValue(
-        value.verticalDragValue - (details.delta.dy / totalHeight),
-      );
-
-      if (value.verticalDragType == VerticalDragType.brightness) {
-        await ScreenBrightnessUtil.setScreenBrightness(value.verticalDragValue);
-      } else if (value.verticalDragType == VerticalDragType.volume) {
-        await VolumeUtil.setVolume(value.verticalDragValue);
-      }
-    }
-  }
-
-  void _onVerticalDragEnd(DragEndDetails details) {
-    if (value.isVerticalDrag) {
-      controller.setVerticalDrag(false);
-    }
-  }
-
-  void _onHorizontalDragStart(DragStartDetails details) {
-    if (canUse && config.canChangeProgress) {
-      controller
-        ..setDragProgress(true)
-        ..setDragDuration(value.position);
-    }
-  }
-
-  void _onHorizontalDragUpdate(DragUpdateDetails details) {
-    if (canUse && value.isDragProgress) {
-      final double relative = details.delta.dx / totalWidth;
-      controller.setDragDuration(
-        value.dragDuration + value.dragTotalDuration * relative,
-      );
-    }
-  }
-
-  void _onHorizontalDragEnd(DragEndDetails details) {
-    if (value.isDragProgress) {
-      controller
-        ..setDragProgress(false)
-        ..seekTo(value.dragDuration);
-    }
-  }
-
-  double get totalWidth =>
-      (context.size?.width ?? MediaQuery.of(context).size.width).ceilToDouble();
-
-  double get totalHeight =>
-      (context.size?.height ?? MediaQuery.of(context).size.height)
-          .ceilToDouble();
 
   // ignore: public_member_api_docs
   VideoLocalizations get local => VideoLocalizations.of(context);

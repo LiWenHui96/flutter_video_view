@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'controls/news/news_video_controls.dart';
-import 'controls/normal/normal_video_controls.dart';
+import 'controls/news/news_controls.dart';
+import 'controls/normal/normal_controls.dart';
 import 'video_view.dart';
 
 /// @Describe: The config of VideoView.
@@ -23,7 +23,7 @@ enum ControlsType {
 extension ControlsTypeExtension on ControlsType {
   /// Widget
   Widget get child => <Widget>[
-        const NormalVideoControls(),
+        const NormalControls(),
         const NewsVideoControls(),
       ].elementAt(index);
 }
