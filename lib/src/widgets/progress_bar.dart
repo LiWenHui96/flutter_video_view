@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_video_view/src/controls/news/news_controls.dart';
 import 'package:flutter_video_view/src/video_view.dart';
 import 'package:video_player/video_player.dart';
 
@@ -56,7 +57,7 @@ class _VideoProgressBarState extends BaseState<VideoProgressBar> {
         color: Colors.transparent,
         child: CustomPaint(
           painter:
-              _ProgressBarPainter(value: widget.value, colors: widget.colors),
+              ProgressBarPainter(value: widget.value, colors: widget.colors),
         ),
       ),
     );
@@ -80,14 +81,66 @@ class _VideoProgressBarState extends BaseState<VideoProgressBar> {
   }
 }
 
-class _ProgressBarPainter extends CustomPainter {
-  _ProgressBarPainter({required this.value, required this.colors});
+/// Progress bar of [NewsControls].
+class NewsVideoProgressBar extends StatefulWidget {
+  /// Progress bar of [NewsControls].
+  NewsVideoProgressBar({
+    Key? key,
+    VideoProgressBarColors? colors,
+    required this.value,
+  })  : colors = colors ?? VideoProgressBarColors(),
+        super(key: key);
 
-  final VideoValue value;
+  /// The color of the progress bar.
   final VideoProgressBarColors colors;
 
+  /// Information about video related data.
+  final VideoValue value;
+
   @override
-  bool shouldRepaint(CustomPainter painter) {
+  State<NewsVideoProgressBar> createState() => _NewsVideoProgressBarState();
+}
+
+class _NewsVideoProgressBarState extends BaseState<NewsVideoProgressBar> {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        height: 2,
+        width: MediaQuery.of(context).size.width,
+        color: Colors.transparent,
+        child: CustomPaint(
+          painter: ProgressBarPainter(
+            value: widget.value,
+            colors: widget.colors,
+            isPoints: false,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Painter for the progress bar.
+class ProgressBarPainter extends CustomPainter {
+  /// Progress bar and aiming point.
+  ProgressBarPainter({
+    required this.value,
+    required this.colors,
+    this.isPoints = true,
+  });
+
+  /// Data related to the video.
+  final VideoValue value;
+
+  /// Color
+  final VideoProgressBarColors colors;
+
+  /// Whether to draw aiming points.
+  final bool isPoints;
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return true;
   }
 
@@ -116,27 +169,30 @@ class _ProgressBarPainter extends CustomPainter {
                 .inMilliseconds /
             value.duration.inMilliseconds;
     final double playedPart = handleValue(playedPartPercent) * size.width;
-    canvas
-      ..drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromPoints(
-            Offset(0, halfHeight),
-            Offset(playedPart, halfHeight + height),
-          ),
-          radius,
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromPoints(
+          Offset(0, halfHeight),
+          Offset(playedPart, halfHeight + height),
         ),
-        Paint()..color = colors.playedColor,
-      )
-      ..drawCircle(
-        Offset(playedPart, halfHeight + height / 2),
-        height * (value.isDragProgress ? 3 : 2),
-        Paint()..color = colors.handleColor,
-      )
-      ..drawCircle(
-        Offset(playedPart, halfHeight + height / 2),
-        height * (value.isDragProgress ? 5 : 3),
-        Paint()..color = colors.handleMoreColor,
-      );
+        radius,
+      ),
+      Paint()..color = colors.playedColor,
+    );
+
+    if (isPoints) {
+      canvas
+        ..drawCircle(
+          Offset(playedPart, halfHeight + height / 2),
+          height * (value.isDragProgress ? 3 : 2),
+          Paint()..color = colors.handleColor,
+        )
+        ..drawCircle(
+          Offset(playedPart, halfHeight + height / 2),
+          height * (value.isDragProgress ? 5 : 3),
+          Paint()..color = colors.handleMoreColor,
+        );
+    }
 
     for (final DurationRange range in value.buffered) {
       final double start = range.startFraction(value.duration) * size.width;
@@ -150,6 +206,7 @@ class _ProgressBarPainter extends CustomPainter {
     }
   }
 
+  /// 
   double handleValue(double value) {
     if (value > 1) {
       return 1;
