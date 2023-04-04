@@ -22,8 +22,7 @@ enum ControlsType {
 /// Extension of [ControlsType].
 extension ControlsTypeExtension on ControlsType {
   /// Widget
-  Widget get child =>
-      <Widget>[const NormalControls(), const NewsControls()].elementAt(index);
+  Widget get child => <Widget>[const NormalControls()].elementAt(index);
 }
 
 /// Widgets in various initialized states.

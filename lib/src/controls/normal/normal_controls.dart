@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_video_view/src/base_controls.dart';
 import 'package:flutter_video_view/src/video_view.dart';
-import 'package:flutter_video_view/src/video_view_localizations.dart';
 
 import 'normal_controls_bottom.dart';
 import 'normal_controls_center.dart';
@@ -23,8 +22,6 @@ class NormalControls extends StatefulWidget {
 }
 
 class _NormalControlsState extends BaseVideoControls<NormalControls> {
-  double? _lastVolume;
-
   @override
   Widget build(BuildContext context) {
     if (value.isFinish) {
@@ -120,50 +117,12 @@ class _NormalControlsState extends BaseVideoControls<NormalControls> {
   Widget _buildBottomControls() {
     return NormalControlsBottom(
       onPlayOrPause: playOrPause,
-      onMute: () {
-        if (canUse) {
-          if (value.volume == 0) {
-            controller.setVolume(_lastVolume ?? .5);
-          } else {
-            _lastVolume = value.volume;
-            controller.setVolume(0);
-          }
-
-          showOrHide(visible: true);
-        }
-      },
-      onFullScreen: () {
-        if (canUse) {
-          resetSeconds();
-          controller.setFullScreen(!value.isFullScreen);
-        }
-      },
-      onDragStart: (DragStartDetails details) {
-        if (canUse) {
-          controller.setDragProgress(true);
-        }
-      },
-      onDragUpdate: (double relative) {
-        if (canUse && value.isDragProgress) {
-          controller.setDragDuration(value.duration * relative);
-          showOrHide(visible: true, startTimer: false);
-        }
-      },
-      onDragEnd: (DragEndDetails details) {
-        if (value.isDragProgress) {
-          controller
-            ..setDragProgress(false)
-            ..seekTo(value.dragDuration);
-          showOrHide(visible: true);
-        }
-      },
-      onTapUp: (double relative) {
-        if (canUse) {
-          controller
-            ..setDragDuration(value.duration * relative)
-            ..seekTo(value.dragDuration);
-        }
-      },
+      onMute: onMute,
+      onFullScreen: onFullScreen,
+      onDragStart: onDragStart,
+      onDragUpdate: onDragUpdate,
+      onDragEnd: onDragEnd,
+      onTapUp: onTapUp,
     );
   }
 
@@ -225,9 +184,6 @@ class _NormalControlsState extends BaseVideoControls<NormalControls> {
     return super
         .tooltipWidget(child: child, alignment: alignment, margin: margin);
   }
-
-  // ignore: public_member_api_docs
-  VideoLocalizations get local => VideoLocalizations.of(context);
 }
 
 class _ViewProgressIndicator extends StatelessWidget {

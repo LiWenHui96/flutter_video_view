@@ -7,6 +7,7 @@ import 'package:flutter_video_view/src/video_view.dart';
 import 'package:flutter_video_view/src/widgets/widgets.dart';
 
 import 'utils/utils.dart';
+import 'video_view_localizations.dart';
 
 /// @Describe: Base for VideoControls.
 ///
@@ -27,6 +28,9 @@ abstract class BaseVideoControls<T extends StatefulWidget>
 
   /// The current number of seconds.
   int _currentSeconds = 0;
+
+  /// The current volume.
+  double? _lastVolume;
 
   @override
   void didChangeDependencies() {
@@ -89,6 +93,12 @@ abstract class BaseVideoControls<T extends StatefulWidget>
   /// Change the state of the controller so that it can be shown or hidden.
   @protected
   void showOrHide({bool? visible, bool startTimer = true}) {
+    if (startTimer) {
+      resetSeconds();
+    } else {
+      _currentSeconds = hideSeconds + 1;
+    }
+
     controller.setVisible(visible ?? !value.isVisible);
   }
 
@@ -109,17 +119,37 @@ abstract class BaseVideoControls<T extends StatefulWidget>
     }
   }
 
+  /// Mute or not.
+  void onMute() {
+    if (canUse) {
+      if (value.volume == 0) {
+        controller.setVolume(_lastVolume ?? .5);
+      } else {
+        _lastVolume = value.volume;
+        controller.setVolume(0);
+      }
+
+      showOrHide(visible: true);
+    }
+  }
+
+  /// Fullscreen or not.
+  void onFullScreen() {
+    if (canUse) {
+      _currentSeconds = 0;
+      controller.setFullScreen(!value.isFullScreen);
+    }
+  }
+
   /// Start [hideTimer].
   @protected
   void startHideTimer() {
     hideTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       if (timer.isActive && value.isVisible) {
-        final int hideSeconds = config.hideControlsTimer.inSeconds;
-
         if (_currentSeconds == hideSeconds) {
           controller.setVisible(false);
-          _currentSeconds = 0;
-        } else {
+          resetSeconds();
+        } else if (_currentSeconds < hideSeconds) {
           _currentSeconds++;
         }
       }
@@ -287,6 +317,8 @@ abstract class BaseVideoControls<T extends StatefulWidget>
   @protected
   void onHorizontalDragStart(DragStartDetails details) {
     if (canUse && config.canChangeProgress) {
+      showOrHide(visible: true, startTimer: false);
+
       controller
         ..setDragProgress(true)
         ..setDragDuration(value.position);
@@ -311,8 +343,49 @@ abstract class BaseVideoControls<T extends StatefulWidget>
   @protected
   void onHorizontalDragEnd(DragEndDetails details) {
     if (value.isDragProgress) {
+      showOrHide(visible: true);
+
       controller
         ..setDragProgress(false)
+        ..seekTo(value.dragDuration);
+    }
+  }
+
+  /// The callback event before dragging the progress bar to adjust the
+  /// progress.
+  @protected
+  void onDragStart(DragStartDetails details) {
+    if (canUse) {
+      controller.setDragProgress(true);
+      showOrHide(visible: true, startTimer: false);
+    }
+  }
+
+  /// The callback event during dragging the progress bar to adjust the
+  /// progress.
+  @protected
+  void onDragUpdate(double relative) {
+    if (canUse && value.isDragProgress) {
+      controller.setDragDuration(value.duration * relative);
+    }
+  }
+
+  /// The callback event after dragging the progress bar to adjust the progress.
+  @protected
+  void onDragEnd(DragEndDetails details) {
+    if (value.isDragProgress) {
+      controller
+        ..setDragProgress(false)
+        ..seekTo(value.dragDuration);
+      showOrHide(visible: true);
+    }
+  }
+
+  /// Click on the progress bar to change the progress of the video.
+  void onTapUp(double relative) {
+    if (canUse) {
+      controller
+        ..setDragDuration(value.duration * relative)
         ..seekTo(value.dragDuration);
     }
   }
@@ -370,6 +443,12 @@ abstract class BaseVideoControls<T extends StatefulWidget>
   /// The style of all text.
   TextStyle get defaultStyle =>
       TextStyle(fontSize: config.textSize, color: config.foregroundColor);
+
+  /// Time to hide the controller.
+  int get hideSeconds => config.hideControlsTimer.inSeconds;
+
+  // ignore: public_member_api_docs
+  VideoLocalizations get local => VideoLocalizations.of(context);
 
   // ignore: public_member_api_docs
   VideoController get controller => _controller!;

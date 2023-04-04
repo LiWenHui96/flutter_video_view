@@ -31,16 +31,18 @@ class NormalControlsBottom extends StatelessWidget {
   /// Enable/disable full screen mode.
   final VoidCallback? onFullScreen;
 
-  /// Start the progress adjustment operation.
+  /// The callback event before dragging the progress bar to adjust the
+  /// progress.
   final GestureDragStartCallback onDragStart;
 
-  /// Progress in adjustment.
+  /// The callback event during dragging the progress bar to adjust the
+  /// progress.
   final ValueChanged<double> onDragUpdate;
 
-  /// End the operation of progress adjustment.
+  /// The callback event after dragging the progress bar to adjust the progress.
   final GestureDragEndCallback onDragEnd;
 
-  /// Click to adjust the video's progress.
+  /// Click on the progress bar to change the progress of the video.
   final ValueChanged<double> onTapUp;
 
   @override
@@ -62,7 +64,7 @@ class NormalControlsBottom extends StatelessWidget {
       onPressed: onPlayOrPause,
     );
 
-    final Widget b = _buildProgressBar(
+    final Widget b = _buildProgress(
       value,
       config,
       textPosition,
@@ -119,7 +121,7 @@ class NormalControlsBottom extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressBar(
+  Widget _buildProgress(
     VideoValue value,
     VideoConfig config,
     VideoTextPosition textPosition,
@@ -137,7 +139,7 @@ class NormalControlsBottom extends StatelessWidget {
 
     final Widget duration = _buildDuration(value, config, textPosition, style);
 
-    final Widget progress = _buildProgress(
+    final Widget progress = _buildProgressBar(
       value,
       config,
       onDragStart,
@@ -179,7 +181,7 @@ class NormalControlsBottom extends StatelessWidget {
     return Text(text, style: style);
   }
 
-  Widget _buildProgress(
+  Widget _buildProgressBar(
     VideoValue value,
     VideoConfig config,
     GestureDragStartCallback onDragStart,
