@@ -51,8 +51,6 @@ class NormalControlsBottom extends StatelessWidget {
     final VideoValue value = controller.value;
     final VideoConfig config = controller.config;
 
-    final TextStyle style =
-        TextStyle(fontSize: config.textSize, color: config.foregroundColor);
     final VideoTextPosition textPosition =
         config.onTextPosition?.call(value.isFullScreen) ??
             VideoTextPosition.ltl;
@@ -68,7 +66,6 @@ class NormalControlsBottom extends StatelessWidget {
       value,
       config,
       textPosition,
-      style,
       onDragStart,
       onDragUpdate,
       onDragEnd,
@@ -125,7 +122,6 @@ class NormalControlsBottom extends StatelessWidget {
     VideoValue value,
     VideoConfig config,
     VideoTextPosition textPosition,
-    TextStyle style,
     GestureDragStartCallback onDragStart,
     ValueChanged<double> onDragUpdate,
     GestureDragEndCallback onDragEnd,
@@ -135,9 +131,9 @@ class NormalControlsBottom extends StatelessWidget {
       width: config.onProgressBarGap?.call(value.isFullScreen) ?? 10,
     );
 
-    final Widget position = _buildPosition(value, config, style);
+    final Widget position = _buildPosition(value, config);
 
-    final Widget duration = _buildDuration(value, config, textPosition, style);
+    final Widget duration = _buildDuration(value, config, textPosition);
 
     final Widget progress = _buildProgressBar(
       value,
@@ -161,15 +157,14 @@ class NormalControlsBottom extends StatelessWidget {
     return Row(children: children ?? <Widget>[]);
   }
 
-  Widget _buildPosition(VideoValue value, VideoConfig config, TextStyle style) {
-    return Text(formatDuration(value.position), style: style);
+  Widget _buildPosition(VideoValue value, VideoConfig config) {
+    return Text(formatDuration(value.position), style: config.defaultStyle);
   }
 
   Widget _buildDuration(
     VideoValue value,
     VideoConfig config,
     VideoTextPosition textPosition,
-    TextStyle style,
   ) {
     String text = formatDuration(value.duration);
 
@@ -178,7 +173,7 @@ class NormalControlsBottom extends StatelessWidget {
       text = '/$text';
     }
 
-    return Text(text, style: style);
+    return Text(text, style: config.defaultStyle);
   }
 
   Widget _buildProgressBar(

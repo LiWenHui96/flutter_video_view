@@ -76,7 +76,7 @@ class _NewsControlsState extends BaseVideoControls<NewsControls> {
   Widget _buildTopControls() {
     return NewsControlsTop(
       backButton: kBackButton(),
-      defaultStyle: defaultStyle,
+      defaultStyle: config.defaultStyle,
     );
   }
 
@@ -120,7 +120,7 @@ class _NewsControlsState extends BaseVideoControls<NewsControls> {
     if (value.isDragProgress) {
       child = Text(
         '${formatDuration(value.dragDuration)} / ${formatDuration(value.duration)}',
-        style: defaultStyle,
+        style: config.defaultStyle,
       );
     }
 
@@ -136,7 +136,7 @@ class _NewsControlsState extends BaseVideoControls<NewsControls> {
         children: <Widget>[
           ...List<Icon>.filled(3, icon).toList(),
           const SizedBox(width: 3),
-          Text(local.speedPlay, style: defaultStyle),
+          Text(local.speedPlay, style: config.defaultStyle),
         ],
       );
     }

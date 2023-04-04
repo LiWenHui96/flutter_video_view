@@ -440,10 +440,6 @@ abstract class BaseVideoControls<T extends StatefulWidget>
   bool get canUse =>
       !value.isLock && value.isInitialized && value.status.isSuccess;
 
-  /// The style of all text.
-  TextStyle get defaultStyle =>
-      TextStyle(fontSize: config.textSize, color: config.foregroundColor);
-
   /// Time to hide the controller.
   int get hideSeconds => config.hideControlsTimer.inSeconds;
 

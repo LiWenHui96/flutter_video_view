@@ -101,7 +101,7 @@ class _NormalControlsState extends BaseVideoControls<NormalControls> {
   Widget _buildTopControls() {
     return NormalControlsTop(
       backButton: kBackButton(),
-      defaultStyle: defaultStyle,
+      defaultStyle: config.defaultStyle,
     );
   }
 
@@ -154,7 +154,7 @@ class _NormalControlsState extends BaseVideoControls<NormalControls> {
         children: <Widget>[
           ...List<Icon>.filled(3, icon).toList(),
           const SizedBox(width: 3),
-          Text(local.speedPlay, style: defaultStyle),
+          Text(local.speedPlay, style: config.defaultStyle),
         ],
       );
 
@@ -177,7 +177,7 @@ class _NormalControlsState extends BaseVideoControls<NormalControls> {
     if (value.isDragProgress) {
       child = Text(
         '${formatDuration(value.dragDuration)} / ${formatDuration(value.duration)}',
-        style: defaultStyle,
+        style: config.defaultStyle,
       );
     }
 

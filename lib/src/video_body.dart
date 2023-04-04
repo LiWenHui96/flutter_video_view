@@ -27,7 +27,7 @@ class VideoBody extends StatelessWidget {
     final Widget placeholderChild = _buildPlaceholderWidget(
       context,
       value.status,
-      TextStyle(fontSize: config.textSize, color: config.foregroundColor),
+      config.defaultStyle,
       onPressed: () async =>
           controller.initialize().then((_) => controller.play()),
     );

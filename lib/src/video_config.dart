@@ -376,4 +376,8 @@ class VideoConfig {
 
   /// The widget displayed when the maximum preview duration is reached.
   final MaxPreviewTimeBuilder? maxPreviewTimeBuilder;
+
+  /// The style of all text.
+  TextStyle get defaultStyle =>
+      TextStyle(fontSize: textSize, color: foregroundColor);
 }
