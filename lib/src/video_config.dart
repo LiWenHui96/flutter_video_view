@@ -27,25 +27,10 @@ extension ControlsTypeExtension on ControlsType {
 }
 
 /// Widgets in various initialized states.
-typedef PlaceholderBuilder = Widget? Function(VideoInitStatus status);
-
-/// Whether to display controls.
-typedef OnShowControls = bool Function(bool isFullScreen);
-
-/// Widget to display when video playback is complete.
-typedef FinishBuilder = Widget Function(
-  BuildContext context,
-  bool isFullScreen,
-);
+typedef PlaceholderBuilder = Widget? Function(VideoValue value);
 
 /// Play button in the middle.
 typedef CenterPlayButtonBuilder = Widget Function(VoidCallback onPlayOrPause);
-
-/// Widgets placed at the top right.
-typedef TopActionsBuilder = List<Widget> Function(
-  BuildContext context,
-  bool isFullScreen,
-);
 
 /// Widgets on the middle left.
 typedef CenterActionsBuilder = List<Widget> Function(
@@ -66,15 +51,9 @@ typedef BottomBuilder = Widget? Function(
   Widget fullScreenButton,
 );
 
-/// Enumeration value where the progress information is located on
-/// the progress bar.
-typedef OnTextPosition = VideoTextPosition Function(bool isFullScreen);
-
-/// The interval width of the progress bar and time information widget.
-typedef OnProgressBarGap = double Function(bool isFullScreen);
-
-/// The widget displayed when the maximum preview duration is reached.
-typedef MaxPreviewTimeBuilder = Widget Function(
+/// Different widgets are displayed depending on whether they are full screen or
+/// not.
+typedef FullScreenBuilder<T> = T Function(
   BuildContext context,
   bool isFullScreen,
 );
@@ -243,7 +222,7 @@ class VideoConfig {
   final bool looping;
 
   /// A widget which is placed between the video and the controls.
-  final Widget? overlay;
+  final PlaceholderBuilder? overlay;
 
   /// Widgets in various initialized states.
   final PlaceholderBuilder? placeholderBuilder;
@@ -276,7 +255,7 @@ class VideoConfig {
   /// Whether to display controls.
   ///
   /// Defaults to true.
-  final OnShowControls? showControls;
+  final FullScreenBuilder<bool>? showControls;
 
   /// Defines the [Duration] before the video controls are hidden.
   ///
@@ -295,7 +274,7 @@ class VideoConfig {
   final Widget? bufferingBuilder;
 
   /// Widget to display when video playback is complete.
-  final FinishBuilder? finishBuilder;
+  final FullScreenBuilder<Widget>? finishBuilder;
 
   /// The background color of the controller.
   final List<Color> controlsBackgroundColor;
@@ -335,7 +314,7 @@ class VideoConfig {
   final TextStyle? titleTextStyle;
 
   /// Widgets placed at the top right.
-  final TopActionsBuilder? topActionsBuilder;
+  final FullScreenBuilder<List<Widget>>? topActionsBuilder;
 
   /// Whether the lockable button is displayed.
   final bool showLock;
@@ -358,10 +337,10 @@ class VideoConfig {
   /// the progress bar.
   ///
   /// Defaults to TextPosition.ltl.
-  final OnTextPosition? onTextPosition;
+  final FullScreenBuilder<VideoTextPosition>? onTextPosition;
 
   /// The interval width of the progress bar and time information widget.
-  final OnProgressBarGap? onProgressBarGap;
+  final FullScreenBuilder<double>? onProgressBarGap;
 
   /// The default colors used throughout the indicator.
   ///
@@ -375,7 +354,7 @@ class VideoConfig {
   final Duration? maxPreviewTime;
 
   /// The widget displayed when the maximum preview duration is reached.
-  final MaxPreviewTimeBuilder? maxPreviewTimeBuilder;
+  final FullScreenBuilder<Widget>? maxPreviewTimeBuilder;
 
   /// The style of all text.
   TextStyle get defaultStyle =>

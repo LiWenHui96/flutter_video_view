@@ -52,7 +52,7 @@ class NewsControlsBottom extends StatelessWidget {
     final VideoConfig config = controller.config;
 
     final VideoTextPosition textPosition =
-        config.onTextPosition?.call(value.isFullScreen) ??
+        config.onTextPosition?.call(context, value.isFullScreen) ??
             VideoTextPosition.ltl;
 
     final Widget a = AnimatedPlayPause(
@@ -63,13 +63,14 @@ class NewsControlsBottom extends StatelessWidget {
     );
 
     final Widget b = _buildProgress(
-      value,
-      config,
-      textPosition,
-      onDragStart,
-      onDragUpdate,
-      onDragEnd,
-      onTapUp,
+      context,
+      value: value,
+      config: config,
+      textPosition: textPosition,
+      onDragStart: onDragStart,
+      onDragUpdate: onDragUpdate,
+      onDragEnd: onDragEnd,
+      onTapUp: onTapUp,
     );
 
     final Widget c = _buildMuteButton(value, config);
@@ -122,16 +123,17 @@ class NewsControlsBottom extends StatelessWidget {
   }
 
   Widget _buildProgress(
-    VideoValue value,
-    VideoConfig config,
-    VideoTextPosition textPosition,
-    GestureDragStartCallback onDragStart,
-    ValueChanged<double> onDragUpdate,
-    GestureDragEndCallback onDragEnd,
-    ValueChanged<double> onTapUp,
-  ) {
+    BuildContext context, {
+    required VideoValue value,
+    required VideoConfig config,
+    required VideoTextPosition textPosition,
+    required GestureDragStartCallback onDragStart,
+    required ValueChanged<double> onDragUpdate,
+    required GestureDragEndCallback onDragEnd,
+    required ValueChanged<double> onTapUp,
+  }) {
     final SizedBox divider = SizedBox(
-      width: config.onProgressBarGap?.call(value.isFullScreen) ?? 10,
+      width: config.onProgressBarGap?.call(context, value.isFullScreen) ?? 10,
     );
 
     final Widget position = _buildPosition(value, config);

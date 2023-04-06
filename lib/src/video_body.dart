@@ -32,6 +32,8 @@ class VideoBody extends StatelessWidget {
           controller.initialize().then((_) => controller.play()),
     );
 
+    final Widget? overlay = config.overlay?.call(value);
+
     return Container(
       alignment: Alignment.center,
       constraints: constraints,
@@ -49,11 +51,10 @@ class VideoBody extends StatelessWidget {
                 child: VideoPlayer(controller.videoPlayerController),
               ),
             ),
-          if (config.overlay != null) config.overlay!,
-          if (config.showControls?.call(value.isFullScreen) ?? true)
+          if (overlay != null) overlay,
+          if (config.showControls?.call(context, value.isFullScreen) ?? true)
             config.controlsType.child,
-          if (!value.status.isSuccess)
-            config.placeholderBuilder?.call(value.status) ?? placeholderChild,
+          config.placeholderBuilder?.call(value) ?? placeholderChild,
         ],
       ),
     );

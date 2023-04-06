@@ -117,13 +117,6 @@ class _NewsControlsState extends BaseVideoControls<NewsControls> {
     AlignmentGeometry? alignment,
     EdgeInsetsGeometry? margin,
   }) {
-    if (value.isDragProgress) {
-      child = Text(
-        '${formatDuration(value.dragDuration)} / ${formatDuration(value.duration)}',
-        style: config.defaultStyle,
-      );
-    }
-
     if (value.isMaxPlaybackSpeed) {
       final Icon icon = Icon(
         Icons.play_arrow_rounded,
@@ -139,12 +132,22 @@ class _NewsControlsState extends BaseVideoControls<NewsControls> {
           Text(local.speedPlay, style: config.defaultStyle),
         ],
       );
+
+      return super.tooltipWidget(
+        child: child,
+        alignment: Alignment.topCenter,
+        margin: const EdgeInsets.only(top: 8),
+      );
     }
 
-    return super.tooltipWidget(
-      child: child,
-      alignment: Alignment.bottomCenter,
-      margin: const EdgeInsets.only(bottom: 24),
-    );
+    if (value.isDragProgress) {
+      child = Text(
+        '${formatDuration(value.dragDuration)} / ${formatDuration(value.duration)}',
+        style: config.defaultStyle,
+      );
+    }
+
+    return super
+        .tooltipWidget(child: child, alignment: alignment, margin: margin);
   }
 }

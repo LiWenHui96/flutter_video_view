@@ -200,6 +200,10 @@ class VideoController extends ValueNotifier<VideoValue> {
 
   /// Initialize the controller.
   Future<void> initialize() async {
+    if (value.status.isLoading || value.status.isSuccess) {
+      return;
+    }
+
     value = value.copyWith(status: VideoInitStatus.loading);
 
     /// This is the process of video initialization to obtain the relevant
@@ -474,6 +478,8 @@ class VideoController extends ValueNotifier<VideoValue> {
       final int maxPreviewTimeMicr = maxPreviewTime!.inMicroseconds;
 
       if (positionMicr >= maxPreviewTimeMicr && !value.isMaxPreviewTime) {
+        setFullScreen(false);
+
         value = value.copyWith(isMaxPreviewTime: true);
         pause();
         reset();
