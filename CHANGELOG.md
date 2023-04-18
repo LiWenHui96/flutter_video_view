@@ -1,3 +1,8 @@
+# 2.0.1
+
+* Fix Bug.
+* Increase the score.
+
 ## 2.0.0
 
 * Welcome to a brand-new version.
