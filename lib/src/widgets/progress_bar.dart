@@ -206,7 +206,7 @@ class ProgressBarPainter extends CustomPainter {
     }
   }
 
-  /// 
+  ///
   double handleValue(double value) {
     if (value > 1) {
       return 1;

@@ -146,10 +146,10 @@ abstract class BaseVideoControls<T extends StatefulWidget>
   void startHideTimer() {
     hideTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       if (timer.isActive && value.isVisible) {
-        if (_currentSeconds == hideSeconds) {
+        if (_currentSeconds >= hideSeconds) {
           controller.setVisible(false);
           resetSeconds();
-        } else if (_currentSeconds < hideSeconds) {
+        } else {
           _currentSeconds++;
         }
       }
