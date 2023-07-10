@@ -129,10 +129,7 @@ class _NormalControlsState extends BaseVideoControls<NormalControls> {
   @override
   Future<void> initialize() async {
     if (config.showControlsOnInitialize) {
-      Future<void>.delayed(
-        defaultDuration,
-        () => showOrHide(visible: true, startTimer: false),
-      );
+      Future<void>.delayed(defaultDuration, () => showOrHide(visible: true));
     }
   }
 

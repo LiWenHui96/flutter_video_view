@@ -20,15 +20,6 @@ abstract class BaseVideoControls<T extends StatefulWidget>
   late VideoValue _value;
   late VideoConfig _config;
 
-  /// Timer
-  Timer? hideTimer;
-
-  /// Whether the loading is successful.
-  bool _isSuccess = false;
-
-  /// The current number of seconds.
-  int _currentSeconds = 0;
-
   /// The current volume.
   double? _lastVolume;
 
@@ -49,8 +40,6 @@ abstract class BaseVideoControls<T extends StatefulWidget>
 
   @override
   void dispose() {
-    hideTimer?.cancel();
-    hideTimer = null;
     _dispose();
 
     super.dispose();
@@ -71,11 +60,6 @@ abstract class BaseVideoControls<T extends StatefulWidget>
   void _updateState() {
     setState(() => _value = controller.value);
 
-    if (value.status.isSuccess && !_isSuccess) {
-      _isSuccess = true;
-      startHideTimer();
-    }
-
     SystemChrome.setSystemUIChangeCallback((_) async {
       if (!_ && value.isFullScreen) {
         await SystemChrome.setEnabledSystemUIMode(
@@ -93,13 +77,7 @@ abstract class BaseVideoControls<T extends StatefulWidget>
   /// Change the state of the controller so that it can be shown or hidden.
   @protected
   void showOrHide({bool? visible, bool startTimer = true}) {
-    if (startTimer) {
-      resetSeconds();
-    } else {
-      _currentSeconds = hideSeconds + 1;
-    }
-
-    controller.setVisible(visible ?? !value.isVisible);
+    controller.showOrHide(visible: visible, startTimer: startTimer);
   }
 
   /// Play or pause video.
@@ -136,29 +114,8 @@ abstract class BaseVideoControls<T extends StatefulWidget>
   /// Fullscreen or not.
   void onFullScreen() {
     if (canUse) {
-      _currentSeconds = 0;
       controller.setFullScreen(!value.isFullScreen);
     }
-  }
-
-  /// Start [hideTimer].
-  @protected
-  void startHideTimer() {
-    hideTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
-      if (timer.isActive && value.isVisible) {
-        if (_currentSeconds >= hideSeconds) {
-          controller.setVisible(false);
-          resetSeconds();
-        } else {
-          _currentSeconds++;
-        }
-      }
-    });
-  }
-
-  /// Reset seconds.
-  void resetSeconds() {
-    _currentSeconds = 0;
   }
 
   /// PlayButton

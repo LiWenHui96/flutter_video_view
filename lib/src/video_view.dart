@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -161,6 +160,12 @@ class VideoController extends ValueNotifier<VideoValue> {
   /// Whether wakelock has been opened before it is opened.
   bool _beforeEnableWakelock = false;
 
+  /// Timer
+  Timer? _hideTimer;
+
+  /// The current number of seconds.
+  int _currentSeconds = 0;
+
   // ignore: public_member_api_docs
   static VideoController of(BuildContext context) => context
       .dependOnInheritedWidgetOfExactType<VideoControllerInherited>()!
@@ -236,6 +241,8 @@ class VideoController extends ValueNotifier<VideoValue> {
         aspectRatio:
             config.aspectRatio ?? videoPlayerController.value.aspectRatio,
       );
+
+      _startHideTimer();
 
       if (config.autoPlay) {
         await play();
@@ -330,11 +337,7 @@ class VideoController extends ValueNotifier<VideoValue> {
 
   /// Set the explicit and implicit of the controller.
   void setVisible(bool isVisible) {
-    if (_isDisposed) {
-      return;
-    }
-
-    if (value.isVisible == isVisible) {
+    if (_isDisposed || value.isVisible == isVisible) {
       return;
     }
 
@@ -513,6 +516,48 @@ class VideoController extends ValueNotifier<VideoValue> {
     }
   }
 
+  /// Start [_hideTimer].
+  @protected
+  void _startHideTimer() {
+    _timeDispose();
+
+    _hideTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
+      if (timer.isActive && value.isVisible) {
+        print(_currentSeconds);
+        if (_currentSeconds > hideSeconds) {
+          /// No operation.
+        } else if (_currentSeconds == hideSeconds) {
+          setVisible(false);
+          resetSeconds();
+        } else {
+          _currentSeconds++;
+        }
+      }
+    });
+  }
+
+  /// Change the state of the controller so that it can be shown or hidden.
+  void showOrHide({bool? visible, bool startTimer = true}) {
+    if (startTimer) {
+      print('gogogo');
+      resetSeconds();
+    } else {
+      _currentSeconds = hideSeconds + 1;
+    }
+
+    setVisible(visible ?? !value.isVisible);
+  }
+
+  void _timeDispose() {
+    _hideTimer?.cancel();
+    _hideTimer = null;
+  }
+
+  /// Reset seconds.
+  void resetSeconds() {
+    _currentSeconds = 0;
+  }
+
   /// Maximum playback speed.
   double get maxPlaybackSpeed =>
       defaultTargetPlatform == TargetPlatform.iOS ? 2.0 : 3.0;
@@ -533,10 +578,14 @@ class VideoController extends ValueNotifier<VideoValue> {
       ..removeListener(_listener)
       ..dispose();
     fullScreenStream?.close();
+    _timeDispose();
     _isDisposed = true;
 
     super.dispose();
   }
+
+  /// Time to hide the controller.
+  int get hideSeconds => config.hideControlsTimer.inSeconds;
 
   /// Config.
   VideoConfig get config => value.config;
