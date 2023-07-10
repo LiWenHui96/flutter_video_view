@@ -1,3 +1,9 @@
+# 2.0.2
+
+* Add speed adjustment.
+* Solve the problem that the controller is visible and invisible.
+* Increase the score.
+
 # 2.0.1
 
 * Fix Bug.
