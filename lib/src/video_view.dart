@@ -523,7 +523,6 @@ class VideoController extends ValueNotifier<VideoValue> {
 
     _hideTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       if (timer.isActive && value.isVisible) {
-        print(_currentSeconds);
         if (_currentSeconds > hideSeconds) {
           /// No operation.
         } else if (_currentSeconds == hideSeconds) {
@@ -539,7 +538,6 @@ class VideoController extends ValueNotifier<VideoValue> {
   /// Change the state of the controller so that it can be shown or hidden.
   void showOrHide({bool? visible, bool startTimer = true}) {
     if (startTimer) {
-      print('gogogo');
       resetSeconds();
     } else {
       _currentSeconds = hideSeconds + 1;
@@ -559,8 +557,10 @@ class VideoController extends ValueNotifier<VideoValue> {
   }
 
   /// Maximum playback speed.
-  double get maxPlaybackSpeed =>
-      defaultTargetPlatform == TargetPlatform.iOS ? 2.0 : 3.0;
+  double get maxPlaybackSpeed => 2;
+
+  /// Playback speeds.
+  List<double> get playSpeeds => <double>[.5, 1, 1.5, 2];
 
   /// Maximum preview duration.
   Duration? get maxPreviewTime => config.maxPreviewTime;

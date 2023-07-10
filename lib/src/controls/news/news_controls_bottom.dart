@@ -77,8 +77,15 @@ class NewsControlsBottom extends StatelessWidget {
 
     final Widget d = _buildFullScreenButton(value, config);
 
-    Widget? child =
-        config.bottomBuilder?.call(context, value.isFullScreen, a, b, c, d);
+    Widget? child = config.bottomBuilder?.call(
+      context,
+      value.isFullScreen,
+      a,
+      b,
+      c,
+      const SizedBox.shrink(),
+      d,
+    );
 
     child = SafeArea(
       top: false,

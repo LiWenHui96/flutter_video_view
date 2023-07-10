@@ -347,6 +347,62 @@ abstract class BaseVideoControls<T extends StatefulWidget>
     }
   }
 
+  /// Set the playback speed of video.
+  Future<void> setPlaybackSpeed() async {
+    showOrHide(visible: false);
+
+    final List<double> list = controller.playSpeeds;
+    final double width = MediaQuery.of(context).size.width * .25;
+    final double height = MediaQuery.of(context).size.height * .8;
+    final double itemExtent = height / list.length;
+
+    await showDialog<void>(
+      context: context,
+      barrierColor: Colors.transparent,
+      useSafeArea: false,
+      builder: (BuildContext ctx) {
+        return Dialog(
+          backgroundColor: config.tooltipBackgroundColor,
+          alignment: Alignment.centerRight,
+          insetPadding: EdgeInsets.zero,
+          child: SizedBox(
+            width: width,
+            height: height,
+            child: Column(
+              children: list.map((double speed) {
+                final bool isSelected = speed == value.playbackSpeed;
+
+                final Widget child = Container(
+                  alignment: Alignment.center,
+                  height: itemExtent,
+                  margin: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Text(
+                    'x$speed',
+                    style: config.defaultStyle.copyWith(
+                      color: isSelected ? Theme.of(context).primaryColor : null,
+                    ),
+                  ),
+                );
+
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.pop(ctx);
+
+                    if (canUse) {
+                      controller.setPlaybackSpeed(speed: speed);
+                    }
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: child,
+                );
+              }).toList(),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   /// External package for volume and brightness, etc.
   @protected
   Widget tooltipWidget({

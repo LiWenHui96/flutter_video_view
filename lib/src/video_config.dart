@@ -48,6 +48,7 @@ typedef BottomBuilder = Widget? Function(
   Widget playPauseButton,
   Widget progressBar,
   Widget muteButton,
+  Widget speedButton,
   Widget fullScreenButton,
 );
 

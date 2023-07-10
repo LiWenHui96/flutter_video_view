@@ -123,6 +123,8 @@ class _NormalControlsState extends BaseVideoControls<NormalControls> {
       onDragUpdate: onDragUpdate,
       onDragEnd: onDragEnd,
       onTapUp: onTapUp,
+      speedLabel: local.speed,
+      onPlaybackSpeed: setPlaybackSpeed,
     );
   }
 

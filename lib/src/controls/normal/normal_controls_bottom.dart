@@ -20,6 +20,8 @@ class NormalControlsBottom extends StatelessWidget {
     required this.onDragUpdate,
     required this.onDragEnd,
     required this.onTapUp,
+    required this.speedLabel,
+    required this.onPlaybackSpeed,
   }) : super(key: key);
 
   /// Play or pause video.
@@ -44,6 +46,12 @@ class NormalControlsBottom extends StatelessWidget {
 
   /// Click on the progress bar to change the progress of the video.
   final ValueChanged<double> onTapUp;
+
+  /// Text used to describe "speed".
+  final String speedLabel;
+
+  /// Set the playback speed of video.
+  final VoidCallback onPlaybackSpeed;
 
   @override
   Widget build(BuildContext context) {
@@ -75,15 +83,17 @@ class NormalControlsBottom extends StatelessWidget {
 
     final Widget c = _buildMuteButton(value, config);
 
+    final Widget e = _buildSpeedButton(context, value, config);
+
     final Widget d = _buildFullScreenButton(value, config);
 
     Widget? child =
-        config.bottomBuilder?.call(context, value.isFullScreen, a, b, c, d);
+        config.bottomBuilder?.call(context, value.isFullScreen, a, b, c, e, d);
 
     child = SafeArea(
       top: false,
       bottom: value.isPortrait && value.isFullScreen,
-      child: child ?? Row(children: <Widget>[a, Expanded(child: b), d]),
+      child: child ?? Row(children: <Widget>[a, Expanded(child: b), e, d]),
     );
 
     child = Container(
@@ -108,6 +118,29 @@ class NormalControlsBottom extends StatelessWidget {
       color: config.foregroundColor,
       onPressed: onMute,
     );
+  }
+
+  Widget _buildSpeedButton(
+    BuildContext context,
+    VideoValue value,
+    VideoConfig config,
+  ) {
+    if (!value.isFullScreen) {
+      return const SizedBox.shrink();
+    }
+
+    final String label =
+        value.playbackSpeed == 1.0 ? speedLabel : 'x${value.playbackSpeed}';
+
+    final Widget child = TextButton(
+      onPressed: onPlaybackSpeed,
+      style: ButtonStyle(
+        overlayColor: MaterialStateProperty.all(Colors.transparent),
+      ),
+      child: Text(label, style: config.defaultStyle),
+    );
+
+    return Container(margin: const EdgeInsets.only(left: 12), child: child);
   }
 
   Widget _buildFullScreenButton(VideoValue value, VideoConfig config) {

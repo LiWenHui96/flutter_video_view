@@ -42,6 +42,9 @@ abstract class LocalizationsBase {
 
   /// Maximum speed playback.
   String get speedPlay => getItem('speedPlay').toString();
+
+  /// Speed.
+  String get speed => getItem('speed').toString();
 }
 
 /// localizations
@@ -78,10 +81,12 @@ class VideoLocalizations extends LocalizationsBase {
     'en': <String, String>{
       'retry': 'Retry',
       'speedPlay': 'Maximum speed playback',
+      'speed': 'x1.0',
     },
     'zh': <String, String>{
       'retry': '重试',
       'speedPlay': '倍速播放中',
+      'speed': '倍速',
     },
   };
 }
