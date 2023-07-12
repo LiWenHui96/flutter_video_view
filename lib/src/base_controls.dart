@@ -353,8 +353,7 @@ abstract class BaseVideoControls<T extends StatefulWidget>
 
     final List<double> list = controller.playSpeeds;
     final double width = MediaQuery.of(context).size.width * .25;
-    final double height = MediaQuery.of(context).size.height * .8;
-    final double itemExtent = height / list.length;
+    final double height = MediaQuery.of(context).size.height;
 
     await showDialog<void>(
       context: context,
@@ -365,16 +364,15 @@ abstract class BaseVideoControls<T extends StatefulWidget>
           backgroundColor: config.tooltipBackgroundColor,
           alignment: Alignment.centerRight,
           insetPadding: EdgeInsets.zero,
-          child: SizedBox(
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: height * .1),
             width: width,
-            height: height,
             child: Column(
               children: list.map((double speed) {
                 final bool isSelected = speed == value.playbackSpeed;
 
-                final Widget child = Container(
+                Widget child = Container(
                   alignment: Alignment.center,
-                  height: itemExtent,
                   margin: const EdgeInsets.symmetric(horizontal: 10),
                   child: Text(
                     'x$speed',
@@ -384,7 +382,7 @@ abstract class BaseVideoControls<T extends StatefulWidget>
                   ),
                 );
 
-                return GestureDetector(
+                child = GestureDetector(
                   onTap: () {
                     Navigator.pop(ctx);
 
@@ -395,6 +393,8 @@ abstract class BaseVideoControls<T extends StatefulWidget>
                   behavior: HitTestBehavior.opaque,
                   child: child,
                 );
+
+                return Expanded(child: child);
               }).toList(),
             ),
           ),
