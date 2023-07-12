@@ -496,7 +496,7 @@ class VideoController extends ValueNotifier<VideoValue> {
   /// Reset properties, including isMaxPlaybackSpeed, isVerticalDrag,
   /// verticalDragValue, isDragProgress, dragDuration, etc.
   void reset() {
-    if (value.isMaxPlaybackSpeed) {
+    if (value.playbackSpeed != 1) {
       setPlaybackSpeed(speed: 1);
     }
 
