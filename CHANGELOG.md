@@ -1,3 +1,7 @@
+# 2.0.2+1
+
+* Fix Bug.
+
 # 2.0.2
 
 * Add speed adjustment.
