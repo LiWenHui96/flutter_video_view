@@ -1,3 +1,7 @@
+## 2.1.0
+
+* Flutter minimum version `3.10.0`
+
 # 2.0.2+1
 
 * Fix Bug.
