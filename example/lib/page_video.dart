@@ -22,9 +22,10 @@ class _VideoPageState extends State<VideoPage> {
   void initState() {
     Future<void>.delayed(Duration.zero, () {
       final String? url = ModalRoute.of(context)?.settings.arguments as String?;
+      final Uri? uri = Uri.tryParse(url ?? '');
 
       controller = VideoController(
-        videoPlayerController: VideoPlayerController.network(url ?? ''),
+        videoPlayerController: VideoPlayerController.networkUrl(uri!),
         videoConfig: VideoConfig(
           height: 260,
           // autoInitialize: true,

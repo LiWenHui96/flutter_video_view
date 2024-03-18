@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 /// @Date: 2022/6/22
 
 class VideoViewLocalizations extends LocalizationsDelegate<VideoLocalizations> {
-  // ignore: public_member_api_docs
   const VideoViewLocalizations();
 
   /// Provided to [MaterialApp] for use.
@@ -28,13 +27,10 @@ class VideoViewLocalizations extends LocalizationsDelegate<VideoLocalizations> {
 
 /// Localizations
 abstract class LocalizationsBase {
-  // ignore: public_member_api_docs
   const LocalizationsBase(this.locale);
 
-  // ignore: public_member_api_docs
   final Locale? locale;
 
-  // ignore: public_member_api_docs
   Object? getItem(String key);
 
   /// Reinitialize.
@@ -49,7 +45,6 @@ abstract class LocalizationsBase {
 
 /// localizations
 class VideoLocalizations extends LocalizationsBase {
-  // ignore: public_member_api_docs
   const VideoLocalizations(Locale? locale) : super(locale);
 
   static const VideoLocalizations _static = VideoLocalizations(null);

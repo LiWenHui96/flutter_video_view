@@ -128,17 +128,14 @@ abstract class BaseVideoControls<T extends StatefulWidget>
       return const SizedBox.shrink();
     }
 
-    final Widget child = Container(
-      padding: const EdgeInsets.all(4),
+    final Widget child = AnimatedPlayPause(
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(.35),
         shape: BoxShape.circle,
       ),
-      child: AnimatedPlayPause(
-        isPlaying: value.isPlaying,
-        color: config.foregroundColor,
-        onPressed: playOrPause,
-      ),
+      isPlaying: value.isPlaying,
+      color: config.foregroundColor,
+      onPressed: playOrPause,
     );
 
     return Center(
@@ -456,16 +453,12 @@ abstract class BaseVideoControls<T extends StatefulWidget>
   /// Time to hide the controller.
   int get hideSeconds => config.hideControlsTimer.inSeconds;
 
-  // ignore: public_member_api_docs
   VideoLocalizations get local => VideoLocalizations.of(context);
 
-  // ignore: public_member_api_docs
   VideoController get controller => _controller!;
 
-  // ignore: public_member_api_docs
   VideoValue get value => _value;
 
-  // ignore: public_member_api_docs
   VideoConfig get config => _config;
 }
 

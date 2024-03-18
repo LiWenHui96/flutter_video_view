@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
-import 'package:wakelock/wakelock.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'utils/utils.dart';
 import 'video_body.dart';
@@ -140,7 +140,7 @@ class VideoController extends ValueNotifier<VideoValue> {
     VideoConfig? videoConfig,
   }) : super(
           VideoValue(
-            videoPlayerValue: VideoPlayerValue.uninitialized(),
+            videoPlayerValue: const VideoPlayerValue.uninitialized(),
             config: videoConfig ?? VideoConfig(),
           ),
         ) {
@@ -166,7 +166,6 @@ class VideoController extends ValueNotifier<VideoValue> {
   /// The current number of seconds.
   int _currentSeconds = 0;
 
-  // ignore: public_member_api_docs
   static VideoController of(BuildContext context) => context
       .dependOnInheritedWidgetOfExactType<VideoControllerInherited>()!
       .controller;
@@ -193,9 +192,9 @@ class VideoController extends ValueNotifier<VideoValue> {
       await seekTo(config.startAt);
     }
 
-    _beforeEnableWakelock = await Wakelock.enabled;
+    _beforeEnableWakelock = await WakelockPlus.enabled;
     if (config.allowedScreenSleep && !_beforeEnableWakelock) {
-      await Wakelock.enable();
+      await WakelockPlus.enable();
     }
 
     if (config.fullScreenByDefault) {
@@ -433,7 +432,7 @@ class VideoController extends ValueNotifier<VideoValue> {
   @protected
   void enterFullScreen() {
     if (!config.allowedScreenSleep) {
-      Wakelock.enable();
+      WakelockPlus.enable();
     }
 
     SystemChrome.setEnabledSystemUIMode(
@@ -446,7 +445,7 @@ class VideoController extends ValueNotifier<VideoValue> {
   /// Exit full-screen mode.
   @protected
   void exitFullScreen() {
-    Wakelock.disable();
+    WakelockPlus.disable();
 
     setFullScreen(false, isFire: false);
     setLock(false);
@@ -572,7 +571,7 @@ class VideoController extends ValueNotifier<VideoValue> {
     }
 
     if (!_beforeEnableWakelock) {
-      Wakelock.disable();
+      WakelockPlus.disable();
     }
     videoPlayerController
       ..removeListener(_listener)
@@ -805,7 +804,6 @@ class VideoValue {
 
 /// The widget used to pass [VideoController].
 class VideoControllerInherited extends InheritedWidget {
-  // ignore: public_member_api_docs
   const VideoControllerInherited({
     Key? key,
     required this.controller,
@@ -822,10 +820,7 @@ class VideoControllerInherited extends InheritedWidget {
 
 /// Vertical movement adjusts the volume or brightness.
 enum VerticalDragType {
-  // ignore: public_member_api_docs
   brightness,
-
-  // ignore: public_member_api_docs
   volume,
 }
 

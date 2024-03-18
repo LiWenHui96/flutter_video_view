@@ -67,19 +67,27 @@ class VideoBody extends StatelessWidget {
     VoidCallback? onPressed,
   }) {
     if (status.isNone) {
-      return Container(
-        padding: const EdgeInsets.all(4),
+      return AnimatedPlayPause(
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(.85),
           shape: BoxShape.circle,
         ),
-        child: AnimatedPlayPause(isPlaying: false, onPressed: onPressed),
+        isPlaying: false,
+        onPressed: onPressed,
       );
     } else if (status.isLoading) {
       return const CircularProgressIndicator();
     } else if (status.isFail) {
+      final ThemeData theme = Theme.of(context);
+
       return ElevatedButton(
         onPressed: onPressed,
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all(theme.colorScheme.primary),
+          shape: MaterialStateProperty.all(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        ),
         child: Text(VideoLocalizations.of(context).retry, style: defaultStyle),
       );
     }

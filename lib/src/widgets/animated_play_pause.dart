@@ -8,15 +8,24 @@ import 'base_state.dart';
 /// @Date: 2022/6/22
 
 class AnimatedPlayPause extends StatefulWidget {
-  // ignore: public_member_api_docs
   const AnimatedPlayPause({
     Key? key,
+    this.decoration,
     required this.isPlaying,
     this.duration,
     this.size,
     this.color,
     this.onPressed,
   }) : super(key: key);
+
+  /// The decoration to paint behind the [AnimatedPlayPause].
+  ///
+  /// Use the [color] property to specify a simple solid color.
+  ///
+  /// The [AnimatedPlayPause] is not clipped to the decoration. To clip a child
+  /// to the shape of a particular [ShapeDecoration], consider using a
+  /// [ClipPath] widget.
+  final Decoration? decoration;
 
   /// Whether it is playing.
   final bool isPlaying;
@@ -68,7 +77,7 @@ class _AnimatedPlayPauseState extends BaseState<AnimatedPlayPause>
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
+    final Widget child = IconButton(
       icon: AnimatedIcon(
         color: widget.color,
         size: widget.size,
@@ -77,5 +86,7 @@ class _AnimatedPlayPauseState extends BaseState<AnimatedPlayPause>
       ),
       onPressed: widget.onPressed,
     );
+
+    return Container(decoration: widget.decoration, child: child);
   }
 }

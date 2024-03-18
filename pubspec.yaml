@@ -6,19 +6,19 @@ repository: https://github.com/LiWenHui96/flutter_video_view
 issue_tracker: https://github.com/LiWenHui96/flutter_video_view/issues
 
 environment:
-  sdk: ">=2.15.0 <3.0.0"
-  flutter: ">=2.10.0"
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.10.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  provider: ^6.0.0
-  screen_brightness: ^0.2.1
-  video_player: ^2.4.0
-  volume_controller: ^2.0.3
-  wakelock: ^0.6.1
+  provider: ^6.1.0
+  screen_brightness: ^1.0.0
+  video_player: ^2.8.2
+  volume_controller: ^2.0.0
+  wakelock_plus: ^1.1.0
 
 dev_dependencies:
-  flutter_lints: ^1.0.4
+  flutter_lints: ^3.0.1
   flutter_test:
     sdk: flutter

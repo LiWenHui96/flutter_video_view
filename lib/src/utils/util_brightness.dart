@@ -6,7 +6,6 @@ import 'package:screen_brightness/screen_brightness.dart';
 /// @Date: 2022/6/24
 
 class ScreenBrightnessUtil {
-  // ignore: public_member_api_docs
   factory ScreenBrightnessUtil() => _singleton;
 
   ScreenBrightnessUtil._() {

@@ -23,7 +23,7 @@ class NormalControlsCenter extends StatelessWidget {
     final VideoValue value = controller.value;
     final VideoConfig config = controller.config;
 
-    AnimatedLockButton _lockButton() {
+    AnimatedLockButton lockButton() {
       return AnimatedLockButton(
         isLock: value.isLock,
         canShowLock: config.showLock,
@@ -37,8 +37,8 @@ class NormalControlsCenter extends StatelessWidget {
       );
     }
 
-    Widget _actions(List<Widget>? list) {
-      list ??= <Widget>[_lockButton()];
+    Widget actions(List<Widget>? list) {
+      list ??= <Widget>[lockButton()];
 
       final List<Widget> children = list.map((Widget child) {
         if (child is AnimatedLockButton) {
@@ -62,14 +62,14 @@ class NormalControlsCenter extends StatelessWidget {
     Widget child = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        _actions(
+        actions(
           config.centerLeftActionsBuilder
-              ?.call(context, value.isFullScreen, value.isLock, _lockButton()),
+              ?.call(context, value.isFullScreen, value.isLock, lockButton()),
         ),
         const Spacer(),
-        _actions(
+        actions(
           config.centerRightActionsBuilder
-              ?.call(context, value.isFullScreen, value.isLock, _lockButton()),
+              ?.call(context, value.isFullScreen, value.isLock, lockButton()),
         ),
       ],
     );

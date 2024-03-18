@@ -6,7 +6,6 @@ import 'package:volume_controller/volume_controller.dart';
 /// @Date: 2022/6/24
 
 class VolumeUtil {
-  // ignore: public_member_api_docs
   factory VolumeUtil() => _singleton;
 
   VolumeUtil._() {
