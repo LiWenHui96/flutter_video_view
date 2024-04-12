@@ -19,8 +19,8 @@ Please move to step [video_player](https://pub.dev/packages/video_player) for sp
 ### Version constraints
 
 ```yaml
-  sdk: ">=2.15.0 <3.0.0"
-  flutter: ">=2.10.0"
+  sdk: ">=3.2.3 <4.0.0"
+  flutter: ">=3.16.6"
 ```
 
 ### Rely

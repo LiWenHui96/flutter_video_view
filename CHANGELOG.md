@@ -1,3 +1,9 @@
+## 2.1.1
+
+* `video_player` minimum version `2.8.6`
+* `video_player` Updates minimum iOS implementation version to include a privacy manifest. 
+* `video_player` Updates minimum supported SDK version to Flutter 3.16.6/Dart 3.2.3.
+
 ## 2.1.0
 
 * Flutter minimum version `3.10.0`
